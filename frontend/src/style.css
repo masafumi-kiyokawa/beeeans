@@ -192,6 +192,12 @@ a {
   padding: 1rem 0;
 }
 
+.form-error {
+  color: var(--color-danger);
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+
 .step-row {
   display: grid;
   grid-template-columns: 2.5rem 1fr 1fr 2fr auto;
