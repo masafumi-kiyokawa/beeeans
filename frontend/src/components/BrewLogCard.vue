@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { deleteBrewLog } from '../api/client'
-import type { BrewLog, BrewLogWithRecipeName } from '../types'
+import { deleteBrewLog } from "../api/client";
+import type { BrewLog, BrewLogWithRecipeName } from "../types";
 
 const props = defineProps<{
-  log: BrewLog | BrewLogWithRecipeName
-  showRecipeName?: boolean
-}>()
+  log: BrewLog | BrewLogWithRecipeName;
+  showRecipeName?: boolean;
+}>();
 
-const emit = defineEmits<{ deleted: [] }>()
+const emit = defineEmits<{ deleted: [] }>();
 
 function formatDate(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const d = new Date(iso);
+  return d.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 async function onDelete() {
-  if (!confirm('このログを削除しますか？')) return
-  await deleteBrewLog(props.log.id)
-  emit('deleted')
+  if (!confirm("このログを削除しますか？")) return;
+  await deleteBrewLog(props.log.id);
+  emit("deleted");
 }
 
 function isWithRecipeName(log: BrewLog | BrewLogWithRecipeName): log is BrewLogWithRecipeName {
-  return 'recipe_name' in log
+  return "recipe_name" in log;
 }
 </script>
 

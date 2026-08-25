@@ -1,36 +1,40 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { deleteRecipe, getRecipe, listBrewLogs } from '../api/client'
-import type { BrewLog, RecipeDetail } from '../types'
-import PourStepEditor from '../components/PourStepEditor.vue'
-import BrewLogCard from '../components/BrewLogCard.vue'
+import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { deleteRecipe, getRecipe, listBrewLogs } from "../api/client";
+import type { BrewLog, RecipeDetail } from "../types";
+import PourStepEditor from "../components/PourStepEditor.vue";
+import BrewLogCard from "../components/BrewLogCard.vue";
 
-const props = defineProps<{ id: string }>()
-const router = useRouter()
+const props = defineProps<{ id: string }>();
+const router = useRouter();
 
-const recipe = ref<RecipeDetail | null>(null)
-const logs = ref<BrewLog[]>([])
-const loading = ref(true)
+const recipe = ref<RecipeDetail | null>(null);
+const logs = ref<BrewLog[]>([]);
+const loading = ref(true);
 
-const recipeId = () => Number(props.id)
+const recipeId = () => Number(props.id);
 
 async function load() {
-  loading.value = true
-  recipe.value = await getRecipe(recipeId())
-  logs.value = await listBrewLogs(recipeId())
-  loading.value = false
+  loading.value = true;
+  recipe.value = await getRecipe(recipeId());
+  logs.value = await listBrewLogs(recipeId());
+  loading.value = false;
 }
 
-onMounted(load)
+onMounted(load);
 
 async function onDelete() {
-  if (!recipe.value) return
-  if (!confirm(`「${recipe.value.name}」を削除しますか？関連する注湯ステップと抽出ログも削除されます。`)) {
-    return
+  if (!recipe.value) return;
+  if (
+    !confirm(
+      `「${recipe.value.name}」を削除しますか？関連する注湯ステップと抽出ログも削除されます。`,
+    )
+  ) {
+    return;
   }
-  await deleteRecipe(recipe.value.id)
-  router.push('/')
+  await deleteRecipe(recipe.value.id);
+  router.push("/");
 }
 </script>
 
@@ -41,7 +45,9 @@ async function onDelete() {
       <h2>{{ recipe.name }}</h2>
       <div class="btn-row">
         <RouterLink class="btn" :to="`/recipes/${recipe.id}/brew`">タイマー開始</RouterLink>
-        <RouterLink class="btn btn-secondary" :to="`/logs/new?recipe_id=${recipe.id}`">ログを記録</RouterLink>
+        <RouterLink class="btn btn-secondary" :to="`/logs/new?recipe_id=${recipe.id}`"
+          >ログを記録</RouterLink
+        >
         <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/edit`">編集</RouterLink>
         <button class="btn btn-danger" @click="onDelete">削除</button>
       </div>

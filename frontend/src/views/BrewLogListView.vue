@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { listBrewLogs, listRecipes } from '../api/client'
-import type { BrewLogWithRecipeName, Recipe } from '../types'
-import BrewLogCard from '../components/BrewLogCard.vue'
+import { onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { listBrewLogs, listRecipes } from "../api/client";
+import type { BrewLogWithRecipeName, Recipe } from "../types";
+import BrewLogCard from "../components/BrewLogCard.vue";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const logs = ref<BrewLogWithRecipeName[]>([])
-const recipes = ref<Recipe[]>([])
-const loading = ref(true)
-const selectedRecipeId = ref<string>((route.query.recipe_id as string) ?? '')
+const logs = ref<BrewLogWithRecipeName[]>([]);
+const recipes = ref<Recipe[]>([]);
+const loading = ref(true);
+const selectedRecipeId = ref<string>((route.query.recipe_id as string) ?? "");
 
 async function load() {
-  loading.value = true
-  const recipeId = selectedRecipeId.value ? Number(selectedRecipeId.value) : undefined
-  logs.value = await listBrewLogs(recipeId)
-  loading.value = false
+  loading.value = true;
+  const recipeId = selectedRecipeId.value ? Number(selectedRecipeId.value) : undefined;
+  logs.value = await listBrewLogs(recipeId);
+  loading.value = false;
 }
 
 onMounted(async () => {
-  recipes.value = await listRecipes()
-  await load()
-})
+  recipes.value = await listRecipes();
+  await load();
+});
 
 watch(selectedRecipeId, (value) => {
-  router.replace({ query: value ? { recipe_id: value } : {} })
-  load()
-})
+  router.replace({ query: value ? { recipe_id: value } : {} });
+  load();
+});
 </script>
 
 <template>
