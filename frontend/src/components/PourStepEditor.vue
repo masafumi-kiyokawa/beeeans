@@ -169,7 +169,8 @@ async function moveStep(index: number, direction: -1 | 1) {
               title="ステップ時間(秒)"
             />
             <small class="step-sub"
-              >累計 {{ formatTime(previousCumulative(index).time + editForm.time_delta_sec) }}</small
+              >累計
+              {{ formatTime(previousCumulative(index).time + editForm.time_delta_sec) }}</small
             >
           </div>
           <div>
@@ -226,7 +227,8 @@ async function moveStep(index: number, direction: -1 | 1) {
         <div>
           <input v-model.number="newStep.time_delta_sec" type="number" min="0" placeholder="秒" />
           <small class="step-sub"
-            >累計 {{ formatTime(previousCumulative(steps.length).time + newStep.time_delta_sec) }}</small
+            >累計
+            {{ formatTime(previousCumulative(steps.length).time + newStep.time_delta_sec) }}</small
           >
         </div>
         <div>
