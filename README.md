@@ -28,3 +28,13 @@ npm run dev
 ```
 
 `http://localhost:5173` でアプリにアクセスできる。
+
+lint / format:
+
+```sh
+cd frontend
+npm run lint        # lint
+npm run lint:fix    # lint (自動修正)
+npm run fmt          # format
+npm run fmt:check    # format (差分チェックのみ)
+```

@@ -1,26 +1,28 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { deleteRecipe, listRecipes } from '../api/client'
-import type { Recipe } from '../types'
+import { onMounted, ref } from "vue";
+import { deleteRecipe, listRecipes } from "../api/client";
+import type { Recipe } from "../types";
 
-const recipes = ref<Recipe[]>([])
-const loading = ref(true)
+const recipes = ref<Recipe[]>([]);
+const loading = ref(true);
 
 async function load() {
-  loading.value = true
-  recipes.value = await listRecipes()
-  loading.value = false
+  loading.value = true;
+  recipes.value = await listRecipes();
+  loading.value = false;
 }
 
 async function onDelete(recipe: Recipe) {
-  if (!confirm(`「${recipe.name}」を削除しますか？関連する注湯ステップと抽出ログも削除されます。`)) {
-    return
+  if (
+    !confirm(`「${recipe.name}」を削除しますか？関連する注湯ステップと抽出ログも削除されます。`)
+  ) {
+    return;
   }
-  await deleteRecipe(recipe.id)
-  await load()
+  await deleteRecipe(recipe.id);
+  await load();
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <template>
@@ -38,7 +40,9 @@ onMounted(load)
     <div v-else class="card-list">
       <div v-for="recipe in recipes" :key="recipe.id" class="card">
         <div class="section-title" style="margin-top: 0">
-          <RouterLink :to="`/recipes/${recipe.id}`"><strong>{{ recipe.name }}</strong></RouterLink>
+          <RouterLink :to="`/recipes/${recipe.id}`"
+            ><strong>{{ recipe.name }}</strong></RouterLink
+          >
         </div>
         <p class="muted" v-if="recipe.bean_origin">{{ recipe.bean_origin }}</p>
         <p class="muted">
@@ -47,7 +51,9 @@ onMounted(load)
         </p>
         <div class="btn-row">
           <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}`">詳細</RouterLink>
-          <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/brew`">タイマー</RouterLink>
+          <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/brew`"
+            >タイマー</RouterLink
+          >
           <button class="btn btn-danger" @click="onDelete(recipe)">削除</button>
         </div>
       </div>
