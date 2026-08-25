@@ -15,6 +15,7 @@ const loading = ref(true)
 const editingId = ref<number | null>(null)
 const editForm = reactive({ target_time_sec: 0, cumulative_water_ml: 0, notes: '' })
 const errorMessage = ref<string | null>(null)
+const saving = ref(false)
 
 const newStep = reactive({ target_time_sec: 0, cumulative_water_ml: 0, notes: '' })
 
@@ -47,6 +48,8 @@ function describeError(e: unknown, fallback: string) {
 async function addStep() {
   errorMessage.value = validateStepInput(newStep)
   if (errorMessage.value) return
+  if (saving.value) return
+  saving.value = true
   try {
     await createPourStep(props.recipeId, {
       target_time_sec: newStep.target_time_sec,
@@ -59,6 +62,8 @@ async function addStep() {
     await load()
   } catch (e) {
     errorMessage.value = describeError(e, 'ステップの追加に失敗しました。')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -78,6 +83,8 @@ function cancelEdit() {
 async function saveEdit(step: PourStep) {
   errorMessage.value = validateStepInput(editForm)
   if (errorMessage.value) return
+  if (saving.value) return
+  saving.value = true
   try {
     await updatePourStep(props.recipeId, step.id, {
       target_time_sec: editForm.target_time_sec,
@@ -88,6 +95,8 @@ async function saveEdit(step: PourStep) {
     await load()
   } catch (e) {
     errorMessage.value = describeError(e, 'ステップの保存に失敗しました。')
+  } finally {
+    saving.value = false
   }
 }
 
@@ -145,7 +154,7 @@ async function moveStep(index: number, direction: -1 | 1) {
           />
           <input v-model="editForm.notes" placeholder="メモ" />
           <div class="btn-row">
-            <button class="btn" @click="saveEdit(step)">保存</button>
+            <button class="btn" :disabled="saving" @click="saveEdit(step)">保存</button>
             <button class="btn btn-secondary" @click="cancelEdit">取消</button>
           </div>
         </template>
@@ -183,7 +192,7 @@ async function moveStep(index: number, direction: -1 | 1) {
           placeholder="累積ml"
         />
         <input v-model="newStep.notes" placeholder="メモ（任意）" />
-        <button class="btn" @click="addStep">追加</button>
+        <button class="btn" :disabled="saving" @click="addStep">追加</button>
       </div>
     </div>
   </div>
