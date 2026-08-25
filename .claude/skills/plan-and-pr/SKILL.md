@@ -1,20 +1,21 @@
 ---
 name: plan-and-pr
-description: Use after finishing a plan for non-trivial work in this repo (a plan-mode plan, a bug-fix sweep, a feature build). Persist the plan to .plans/, implement it, and open PR(s) against main — splitting into multiple focused PRs when the plan covers more than one independent unit of work — then keep any still-open sibling PRs rebased as others merge.
+description: Use after finishing a plan for non-trivial work in this repo (a plan-mode plan, a bug-fix sweep, a feature build). Persist the plan to .claude/plans/, implement it, open a PR per plan file (splitting the plan into multiple files for multiple PRs when the work is large), transcribe each plan into its PR description and delete the plan file once that PR is open, then keep any still-open sibling PRs rebased as others merge.
 ---
 
 # Plan and PR
 
 Workflow for taking a plan for this repo (`beans`) from approval through merged PR(s).
 
-## 1. Persist the plan
+## 1. Persist the plan — one file per PR
 
-Before or immediately after a plan is approved (including via plan-mode's `ExitPlanMode`), write it to `.plans/NN-short-description.md` at the repo root:
+Before or immediately after a plan is approved (including via plan-mode's `ExitPlanMode`), write it to `.claude/plans/NN-short-description.md`:
 
-- `NN` is a zero-padded two-digit sequence number, one higher than the highest existing file in `.plans/` (check with `ls .plans/`).
+- `NN` is a zero-padded two-digit sequence number, one higher than the highest existing file in `.claude/plans/` (check with `ls .claude/plans/`).
 - `short-description` is a few kebab-case words identifying the task.
-- Include at minimum: **Context** (why this work, what prompted it), the approach, and a **verification** section — the same structure plan-mode already produces; just save a copy into the repo instead of leaving it only in the ephemeral plan-mode file.
-- The plan file lands in the same commit(s)/PR(s) as the implementation it describes, not as an isolated commit — a reviewer should see the plan and the code together.
+- Include at minimum: **Context** (why this work, what prompted it), the approach, and a **verification** section.
+
+**A plan file maps 1:1 to a PR.** If the work naturally decomposes into more than ~2-3 independent, separately-mergeable units (see step 4), write one plan file per unit from the start — do not let a single plan file back multiple PRs, and do not open a PR without a corresponding plan file.
 
 ## 2. Implement
 
@@ -23,17 +24,20 @@ Implement per the plan. Verify each change concretely before moving on:
 - A real browser check via claude-in-chrome for UI-facing changes — screenshot the actual behavior, don't just claim it works.
 - Backend changes: exercise the endpoint with `curl` against a running `uvicorn` instance.
 
-## 3. Open PR(s), splitting when the plan is large
+## 3. Open the PR: transcribe the plan, then delete it
 
-Default to one branch + one PR for the whole plan. Split into multiple independent branches/PRs when the plan decomposes into more than ~2-3 separate, independently-mergeable units — e.g. a bug-fix sweep covering unrelated bugs, or a feature with genuinely separable parts. See PRs #5-#8 (`fix/pour-step-*` branches) for the pattern this project already uses: one GitHub Issue + one branch + one PR per bug, each PR's body containing `Closes #N`.
+When a plan file's implementation is complete and ready for review:
 
-Each PR should:
-- Branch off the latest `main`.
-- Contain only the diff for its one unit of work — keep it reviewable and independently revertable.
-- Reference the relevant part of the `.plans/NN-*.md` file (and the GitHub Issue, if one was filed) in its description.
-- Pass verification (step 2) before opening.
+1. Branch off the latest `main`; the branch's diff should contain only this plan's unit of work.
+2. Copy the plan file's full content into the PR description (`gh pr create --body "$(cat .claude/plans/NN-*.md)"`, adding a Summary/Test plan on top as usual) — the PR becomes the permanent record of the plan.
+3. `git rm .claude/plans/NN-short-description.md` as part of this PR's changes, so the file does not exist on `main` after merge. Plan files are working documents for the duration of implementation, not permanent repo history — the merged PR's description is where the plan lives afterward.
+4. Pass verification (step 2) before opening.
 
-## 4. Rebase open sibling PRs as others merge
+## 4. Splitting large plans
+
+If a plan covers more than ~2-3 independent, separately-mergeable units (a bug-fix sweep across unrelated bugs, a feature with genuinely separable parts), split it into multiple plan files under `.claude/plans/` — one per unit — rather than one shared file. Each unit then follows steps 1-3 independently: its own numbered plan file, its own branch, its own PR (with `Closes #N` if a GitHub Issue was filed for it — see PRs #5-#8, `fix/pour-step-*`, for the issue-per-bug pattern this project already uses), its own transcribe-and-delete.
+
+## 5. Rebase open sibling PRs as others merge
 
 Plans split across multiple PRs often touch the same files. After any one of them merges:
 
