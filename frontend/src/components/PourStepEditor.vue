@@ -84,6 +84,13 @@ async function moveStep(index: number, direction: -1 | 1) {
 
 <template>
   <div>
+    <div class="step-row step-row-header">
+      <span>#</span>
+      <span>目標時間（秒）</span>
+      <span>累積湯量（ml）</span>
+      <span>メモ</span>
+      <span>操作</span>
+    </div>
     <p v-if="loading" class="muted">読み込み中...</p>
     <template v-else>
       <p v-if="steps.length === 0" class="empty-state">まだ注湯ステップがありません。</p>
