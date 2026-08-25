@@ -208,6 +208,13 @@ a {
   opacity: 0.55;
 }
 
+.step-row-header {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding-bottom: 0.35rem;
+}
+
 .timer-display {
   font-size: 3rem;
   font-weight: 700;
