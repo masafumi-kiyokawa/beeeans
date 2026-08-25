@@ -23,6 +23,7 @@ Before or immediately after a plan is approved (including via plan-mode's `ExitP
 
 Implement per the plan. Verify each change concretely before moving on:
 - `cd frontend && npx vue-tsc --noEmit` (or `npm run build`) for any TypeScript/Vue change.
+- `cd frontend && npm run fmt:check && npm run lint` for any frontend change — CI runs oxfmt/oxlint as a required gate, so an unformatted file fails the PR even when the build and type-check pass.
 - A real browser check via claude-in-chrome for UI-facing changes — screenshot the actual behavior, don't just claim it works.
 - Backend changes: exercise the endpoint with `curl` against a running `uvicorn` instance.
 
@@ -34,6 +35,7 @@ When a plan file's implementation is complete and ready for review:
 2. Copy the plan file's full content into the PR description (`gh pr create --body "$(cat .claude/plans/NN-*.md)"`, adding a Summary/Test plan on top as usual) — the PR becomes the permanent record of the plan.
 3. `git rm .claude/plans/NN-short-description.md` as part of this PR's changes, so the file does not exist on `main` after merge. Plan files are working documents for the duration of implementation, not permanent repo history — the merged PR's description is where the plan lives afterward.
 4. Pass verification (step 2) before opening.
+5. After pushing (initial push or any follow-up commit), confirm CI is green: `gh pr checks <PR#>` (add `--watch` to block until runs finish). If any check fails, read the failing job's log (`gh run view <run-id> --log-failed`), fix the root cause, push a follow-up commit, and re-check — don't consider the PR done while a check is red.
 
 ## 4. Splitting large plans
 
