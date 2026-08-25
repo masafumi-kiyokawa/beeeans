@@ -8,11 +8,11 @@ const props = defineProps<{ recipeId: number }>();
 const steps = ref<PourStep[]>([]);
 const loading = ref(true);
 const editingId = ref<number | null>(null);
-const editForm = reactive({ target_time_sec: 0, cumulative_water_ml: 0, notes: "" });
+const editForm = reactive({ time_delta_sec: 0, water_delta_ml: 0, notes: "" });
 const errorMessage = ref<string | null>(null);
 const saving = ref(false);
 
-const newStep = reactive({ target_time_sec: 0, cumulative_water_ml: 0, notes: "" });
+const newStep = reactive({ time_delta_sec: 0, water_delta_ml: 0, notes: "" });
 
 async function load() {
   loading.value = true;
@@ -28,10 +28,29 @@ function formatTime(sec: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function validateStepInput(input: { target_time_sec: number; cumulative_water_ml: number }) {
-  if (!Number.isFinite(input.target_time_sec)) return "目標時間を入力してください。";
-  if (!Number.isFinite(input.cumulative_water_ml) || input.cumulative_water_ml <= 0) {
-    return "累積湯量は0より大きい値を入力してください。";
+// 各ステップは累積値(target_time_sec / cumulative_water_ml)でDBに保存されるため、
+// 直前ステップとの差分がそのステップ単体の時間・湯量になる。
+function previousCumulative(index: number) {
+  const prev = steps.value[index - 1];
+  return prev
+    ? { time: prev.target_time_sec, water: prev.cumulative_water_ml }
+    : { time: 0, water: 0 };
+}
+
+function stepDelta(step: PourStep, index: number) {
+  const prev = previousCumulative(index);
+  return {
+    time: step.target_time_sec - prev.time,
+    water: step.cumulative_water_ml - prev.water,
+  };
+}
+
+function validateStepInput(input: { time_delta_sec: number; water_delta_ml: number }) {
+  if (!Number.isFinite(input.time_delta_sec) || input.time_delta_sec < 0) {
+    return "ステップ時間は0以上の値を入力してください。";
+  }
+  if (!Number.isFinite(input.water_delta_ml) || input.water_delta_ml <= 0) {
+    return "ステップ湯量は0より大きい値を入力してください。";
   }
   return null;
 }
@@ -46,13 +65,14 @@ async function addStep() {
   if (saving.value) return;
   saving.value = true;
   try {
+    const prev = previousCumulative(steps.value.length);
     await createPourStep(props.recipeId, {
-      target_time_sec: newStep.target_time_sec,
-      cumulative_water_ml: newStep.cumulative_water_ml,
+      target_time_sec: prev.time + newStep.time_delta_sec,
+      cumulative_water_ml: prev.water + newStep.water_delta_ml,
       notes: newStep.notes || null,
     });
-    newStep.target_time_sec = 0;
-    newStep.cumulative_water_ml = 0;
+    newStep.time_delta_sec = 0;
+    newStep.water_delta_ml = 0;
     newStep.notes = "";
     await load();
   } catch (e) {
@@ -62,11 +82,12 @@ async function addStep() {
   }
 }
 
-function startEdit(step: PourStep) {
+function startEdit(step: PourStep, index: number) {
   errorMessage.value = null;
   editingId.value = step.id;
-  editForm.target_time_sec = step.target_time_sec;
-  editForm.cumulative_water_ml = step.cumulative_water_ml;
+  const delta = stepDelta(step, index);
+  editForm.time_delta_sec = delta.time;
+  editForm.water_delta_ml = delta.water;
   editForm.notes = step.notes ?? "";
 }
 
@@ -75,15 +96,16 @@ function cancelEdit() {
   editingId.value = null;
 }
 
-async function saveEdit(step: PourStep) {
+async function saveEdit(step: PourStep, index: number) {
   errorMessage.value = validateStepInput(editForm);
   if (errorMessage.value) return;
   if (saving.value) return;
   saving.value = true;
   try {
+    const prev = previousCumulative(index);
     await updatePourStep(props.recipeId, step.id, {
-      target_time_sec: editForm.target_time_sec,
-      cumulative_water_ml: editForm.cumulative_water_ml,
+      target_time_sec: prev.time + editForm.time_delta_sec,
+      cumulative_water_ml: prev.water + editForm.water_delta_ml,
       notes: editForm.notes || null,
     });
     editingId.value = null;
@@ -128,8 +150,8 @@ async function moveStep(index: number, direction: -1 | 1) {
     <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
     <div class="step-row step-row-header">
       <span>#</span>
-      <span>目標時間（秒）</span>
-      <span>累積湯量（ml）</span>
+      <span>ステップ時間（秒）</span>
+      <span>ステップ湯量（ml）</span>
       <span>メモ</span>
       <span>操作</span>
     </div>
@@ -139,29 +161,45 @@ async function moveStep(index: number, direction: -1 | 1) {
       <div v-for="(step, index) in steps" :key="step.id" class="step-row">
         <template v-if="editingId === step.id">
           <span>{{ index + 1 }}</span>
-          <input
-            v-model.number="editForm.target_time_sec"
-            type="number"
-            min="0"
-            title="目標時間(秒)"
-          />
-          <input
-            v-model.number="editForm.cumulative_water_ml"
-            type="number"
-            min="0.1"
-            step="0.1"
-            title="累積湯量(ml)"
-          />
+          <div>
+            <input
+              v-model.number="editForm.time_delta_sec"
+              type="number"
+              min="0"
+              title="ステップ時間(秒)"
+            />
+            <small class="step-sub"
+              >累計 {{ formatTime(previousCumulative(index).time + editForm.time_delta_sec) }}</small
+            >
+          </div>
+          <div>
+            <input
+              v-model.number="editForm.water_delta_ml"
+              type="number"
+              min="0.1"
+              step="0.1"
+              title="ステップ湯量(ml)"
+            />
+            <small class="step-sub"
+              >累計 {{ previousCumulative(index).water + editForm.water_delta_ml }}ml</small
+            >
+          </div>
           <input v-model="editForm.notes" placeholder="メモ" />
           <div class="btn-row">
-            <button class="btn" :disabled="saving" @click="saveEdit(step)">保存</button>
+            <button class="btn" :disabled="saving" @click="saveEdit(step, index)">保存</button>
             <button class="btn btn-secondary" @click="cancelEdit">取消</button>
           </div>
         </template>
         <template v-else>
           <span>{{ index + 1 }}</span>
-          <span>{{ formatTime(step.target_time_sec) }}</span>
-          <span>{{ step.cumulative_water_ml }}ml</span>
+          <span>
+            {{ formatTime(stepDelta(step, index).time) }}
+            <small class="step-sub">累計 {{ formatTime(step.target_time_sec) }}</small>
+          </span>
+          <span>
+            {{ stepDelta(step, index).water }}ml
+            <small class="step-sub">累計 {{ step.cumulative_water_ml }}ml</small>
+          </span>
           <span class="muted">{{ step.notes }}</span>
           <div class="btn-row">
             <button class="btn btn-secondary" :disabled="index === 0" @click="moveStep(index, -1)">
@@ -174,7 +212,7 @@ async function moveStep(index: number, direction: -1 | 1) {
             >
               ↓
             </button>
-            <button class="btn btn-secondary" @click="startEdit(step)">編集</button>
+            <button class="btn btn-secondary" @click="startEdit(step, index)">編集</button>
             <button class="btn btn-danger" @click="removeStep(step)">削除</button>
           </div>
         </template>
@@ -185,14 +223,24 @@ async function moveStep(index: number, direction: -1 | 1) {
       <label>ステップを追加</label>
       <div class="step-row">
         <span>-</span>
-        <input v-model.number="newStep.target_time_sec" type="number" min="0" placeholder="秒" />
-        <input
-          v-model.number="newStep.cumulative_water_ml"
-          type="number"
-          min="0.1"
-          step="0.1"
-          placeholder="累積ml"
-        />
+        <div>
+          <input v-model.number="newStep.time_delta_sec" type="number" min="0" placeholder="秒" />
+          <small class="step-sub"
+            >累計 {{ formatTime(previousCumulative(steps.length).time + newStep.time_delta_sec) }}</small
+          >
+        </div>
+        <div>
+          <input
+            v-model.number="newStep.water_delta_ml"
+            type="number"
+            min="0.1"
+            step="0.1"
+            placeholder="ml"
+          />
+          <small class="step-sub"
+            >累計 {{ previousCumulative(steps.length).water + newStep.water_delta_ml }}ml</small
+          >
+        </div>
         <input v-model="newStep.notes" placeholder="メモ（任意）" />
         <button class="btn" :disabled="saving" @click="addStep">追加</button>
       </div>
