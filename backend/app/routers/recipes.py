@@ -40,9 +40,7 @@ def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{recipe_id}", response_model=schemas.RecipeDetailOut)
-def update_recipe(
-    recipe_id: int, payload: schemas.RecipeUpdate, db: Session = Depends(get_db)
-):
+def update_recipe(recipe_id: int, payload: schemas.RecipeUpdate, db: Session = Depends(get_db)):
     recipe = _get_recipe_or_404(recipe_id, db)
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(recipe, field, value)

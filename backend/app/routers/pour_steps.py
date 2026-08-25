@@ -36,9 +36,7 @@ def list_pour_steps(recipe_id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.post(
-    "/{recipe_id}/pour-steps", response_model=schemas.PourStepOut, status_code=201
-)
+@router.post("/{recipe_id}/pour-steps", response_model=schemas.PourStepOut, status_code=201)
 def create_pour_step(
     recipe_id: int, payload: schemas.PourStepCreate, db: Session = Depends(get_db)
 ):

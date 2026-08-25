@@ -8,9 +8,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=list[schemas.BrewLogWithRecipeName])
-def list_brew_logs(
-    recipe_id: int | None = Query(default=None), db: Session = Depends(get_db)
-):
+def list_brew_logs(recipe_id: int | None = Query(default=None), db: Session = Depends(get_db)):
     query = db.query(models.BrewLog, models.Recipe.name).join(
         models.Recipe, models.BrewLog.recipe_id == models.Recipe.id
     )
@@ -51,9 +49,7 @@ def get_brew_log(log_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{log_id}", response_model=schemas.BrewLogOut)
-def update_brew_log(
-    log_id: int, payload: schemas.BrewLogUpdate, db: Session = Depends(get_db)
-):
+def update_brew_log(log_id: int, payload: schemas.BrewLogUpdate, db: Session = Depends(get_db)):
     log = _get_log_or_404(log_id, db)
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(log, field, value)
