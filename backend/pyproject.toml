@@ -11,8 +11,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff>=0.16.4",
-    "ty>=0.0.74",
+    "ruff",
+    "ty",
 ]
 
 [tool.ruff]
@@ -27,3 +27,6 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 
 [tool.ty.environment]
 python-version = "3.11"
+
+[tool.uv]
+exclude-newer = "3 days"
