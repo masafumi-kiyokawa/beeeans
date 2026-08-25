@@ -15,6 +15,8 @@ Before or immediately after a plan is approved (including via plan-mode's `ExitP
 - `short-description` is a few kebab-case words identifying the task.
 - Include at minimum: **Context** (why this work, what prompted it), the approach, and a **verification** section.
 
+**Record the user's actual instructions, not just a paraphrase.** The Context section must quote or closely restate what the user actually asked for — the literal request/constraints, not only Claude's derived rationale. If the user gives follow-up directives after the plan file already exists but before that plan's PR is opened (a scope change, a correction, a clarification like "change X to Y instead"), append them to the plan file's Context (or a short "Follow-up instructions" note) as they arrive, so the file stays the accurate record of everything the user asked for by the time it gets transcribed. The plan file is deleted after transcription (step 3), so anything not captured in it before then is lost from the permanent PR record.
+
 **A plan file maps 1:1 to a PR.** If the work naturally decomposes into more than ~2-3 independent, separately-mergeable units (see step 4), write one plan file per unit from the start — do not let a single plan file back multiple PRs, and do not open a PR without a corresponding plan file.
 
 ## 2. Implement
