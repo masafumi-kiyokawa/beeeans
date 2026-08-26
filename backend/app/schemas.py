@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 # ---- PourStep ----
 
@@ -100,3 +100,25 @@ class BrewLogOut(BrewLogBase):
 
 class BrewLogWithRecipeName(BrewLogOut):
     recipe_name: str
+
+
+# ---- User ----
+
+
+class UserBase(BaseModel):
+    email: EmailStr
+
+
+class UserCreate(UserBase):
+    password: str = Field(min_length=8)
+
+
+class UserLogin(UserBase):
+    password: str
+
+
+class UserOut(UserBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str = Field(validation_alias="public_id")
+    created_at: datetime
