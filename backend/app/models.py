@@ -47,6 +47,10 @@ class Recipe(Base):
     __tablename__ = "recipes"
 
     id = Column(Integer, primary_key=True)
+    public_id = Column(String(36), nullable=False, unique=True, index=True)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     name = Column(String, nullable=False)
     bean_origin = Column(String, nullable=True)
     dose_g = Column(Float, nullable=False)
@@ -57,6 +61,7 @@ class Recipe(Base):
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at = Column(DateTime, nullable=True, index=True)
 
     pour_steps = relationship(
         "PourStep",
@@ -75,6 +80,7 @@ class PourStep(Base):
     __tablename__ = "pour_steps"
 
     id = Column(Integer, primary_key=True)
+    public_id = Column(String(36), nullable=False, unique=True, index=True)
     recipe_id = Column(
         Integer, ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -82,6 +88,7 @@ class PourStep(Base):
     target_time_sec = Column(Integer, nullable=False)
     cumulative_water_ml = Column(Float, nullable=False)
     notes = Column(Text, nullable=True)
+    deleted_at = Column(DateTime, nullable=True, index=True)
 
     recipe = relationship("Recipe", back_populates="pour_steps")
 
@@ -90,6 +97,7 @@ class BrewLog(Base):
     __tablename__ = "brew_logs"
 
     id = Column(Integer, primary_key=True)
+    public_id = Column(String(36), nullable=False, unique=True, index=True)
     recipe_id = Column(
         Integer, ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False, index=True
     )
@@ -97,5 +105,6 @@ class BrewLog(Base):
     rating = Column(Integer, nullable=False)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    deleted_at = Column(DateTime, nullable=True, index=True)
 
     recipe = relationship("Recipe", back_populates="brew_logs")

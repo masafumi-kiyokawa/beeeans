@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hand-drip (pour-over) coffee recipe manager: FastAPI + SQLAlchemy + SQLite backend, Vue 3 + Vite + TypeScript frontend. Monorepo with `backend/` and `frontend/` at the root.
 
-**Persistence is being migrated to local-first.** As of the current state, all recipe/pour-step/brew-log data lives entirely in the browser's IndexedDB (`frontend/src/storage/db.ts`) — the frontend does not call the FastAPI backend at all for this data, and no login is required. The backend (`backend/app/`) still exists and runs, but its `Recipe`/`PourStep`/`BrewLog` endpoints are temporarily unused by the frontend; they will be reconnected once optional email/password accounts + server-side sync across devices are implemented (see `.claude/plans/` history for the phased plan — client-side storage first, auth second, sync last). Treat the "Backend" section below as the target architecture for that later sync step, not the current data flow.
+**Persistence is local-first, with optional server-side sync.** The browser's IndexedDB (`frontend/src/storage/db.ts`) is always the source of truth for the UI, and login is never required — recipe/pour-step/brew-log data works fully offline with zero backend calls. If a user registers/logs in (email + password, session-cookie based — see `backend/app/auth.py`), the app additionally makes a best-effort attempt to mirror that data to the backend via `POST /api/sync/push` / `GET /api/sync/pull` (`backend/app/routers/sync.py`), so the same data becomes available on other devices under the same account. Logged-out usage is unaffected by any of this — see "Known limitations" below for the sync design's accepted tradeoffs.
 
 ## Commands
 
@@ -17,7 +17,7 @@ uv sync                                              # install deps into .venv
 uv run uvicorn app.main:app --reload --port 8000     # run dev server
 ```
 
-Swagger UI at `http://localhost:8000/docs`. No test suite or lint config exists yet. SQLite file lives at `backend/beans.db` (gitignored, created automatically on startup via `Base.metadata.create_all()` — there are no migrations; to change the schema, delete `beans.db` and restart).
+Swagger UI at `http://localhost:8000/docs`. No test suite exists yet, but `uv run ruff check .`, `uv run ruff format --check .`, and `uv run ty check` are required CI gates (see `.github/workflows/ci.yml`). SQLite file lives at `backend/beans.db` (gitignored, created automatically on startup via `Base.metadata.create_all()` — there are no migrations; to change the schema, delete `beans.db` and restart).
 
 ### Frontend (`frontend/`)
 
@@ -28,27 +28,32 @@ npm run build     # type-checks (vue-tsc -b) then builds
 npm run preview
 ```
 
-No separate lint or test script is configured; `npm run build` is the type-check gate.
+No test suite is configured; `npm run build` is the type-check gate, and `npm run lint` (oxlint) / `npm run fmt:check` (oxfmt) are required CI gates.
 
-The backend does **not** need to be running for the frontend to function (see the local-first note above) — `frontend/.env.development`'s `VITE_API_BASE_URL` is currently unused but left in place for the upcoming sync work. CORS in `backend/app/main.py` only allows `localhost:5173`/`127.0.0.1:5173`.
+The backend does **not** need to be running for the frontend to function while logged out (see the local-first note above). `frontend/.env.development`'s `VITE_API_BASE_URL` is used by both `frontend/src/api/authClient.ts` and `frontend/src/api/syncClient.ts`. CORS in `backend/app/main.py` only allows `localhost:5173`/`127.0.0.1:5173`, with `allow_credentials=True` (required for the session cookie).
 
 ## Architecture
 
 ### Backend
 
-Three SQLAlchemy models in `backend/app/models.py`: `Recipe` → `PourStep` (ordered pour steps) and `Recipe` → `BrewLog` (rated brew history), both children `ondelete="CASCADE"` at the DB level (SQLite FK enforcement is turned on via a `PRAGMA foreign_keys=ON` connect-event listener in `database.py`) and `cascade="all, delete-orphan"` on the ORM relationship — deleting a recipe deletes its steps and logs.
+`backend/app/models.py` has `User` → `UserSession` (email/password auth, session-cookie based — see `backend/app/auth.py`/`backend/app/routers/auth.py`) and `User` → `Recipe` → `PourStep` (ordered pour steps) / `Recipe` → `BrewLog` (rated brew history). `PourStep`/`BrewLog` have no `user_id` column of their own — ownership is always checked by joining to `Recipe.user_id` in the query, per `.claude/skills/secure-resource-access/SKILL.md`. `PourStep`/`BrewLog`'s `ondelete="CASCADE"` FK and `cascade="all, delete-orphan"` ORM relationship only fire on a real `db.delete()`, which the sync router never does (see below) — they remain purely a DB-integrity safety net.
 
-There is deliberately **no `crud.py` layer**: routers in `backend/app/routers/` (`recipes.py`, `pour_steps.py`, `brew_logs.py`) query the DB directly via the `get_db()` session dependency. Keep this pattern for new endpoints unless the router logic grows enough to justify extraction.
+There is deliberately **no `crud.py` layer**: routers in `backend/app/routers/` (`auth.py`, `sync.py`) query the DB directly via the `get_db()` session dependency. Keep this pattern for new endpoints unless the router logic grows enough to justify extraction.
 
-`PourStep.step_order` has no DB uniqueness constraint by design — the frontend reorders steps by swapping `step_order` between two rows via two sequential `PUT` calls, which would transiently collide under a unique constraint. Steps are always queried `ORDER BY step_order, id`.
+`Recipe`/`PourStep`/`BrewLog` have **no per-resource CRUD routers** — `backend/app/routers/sync.py` is their only backend entry point, following a bulk push/pull sync contract instead of the `User` schemas' `*Base`/`*Create`/`*Update`/`*Out` convention:
+
+- `POST /api/sync/push` accepts a `SyncPushRequest` (lists of `RecipeSyncItem`/`PourStepSyncItem`/`BrewLogSyncItem` to upsert, plus `*_deleted: list[str]` public-id lists to soft-delete) and upserts/soft-deletes them scoped to `Depends(get_current_user)`. Every `*SyncItem.id` is the resource's client-generated UUID, stored server-side as `public_id` with **no server-side default** — unlike `User.public_id`, the client always supplies it (see `frontend/src/storage/db.ts`'s note on IDs below). A `PourStepSyncItem`/`BrewLogSyncItem`'s `recipe_id` field is always the parent `Recipe`'s `public_id`, never its internal integer id, per `secure-resource-access`.
+- `GET /api/sync/pull` returns the current full server-side snapshot (`SyncPullResponse`) for the logged-in user, excluding soft-deleted rows (`deleted_at IS NOT NULL`).
+- Deletes are **soft** (`deleted_at` column on all three tables) so other devices' next pull can learn about a deletion; deleting a `Recipe` cascades the soft-delete to its `PourStep`/`BrewLog` children manually inside the router (a real DB cascade never fires here). See "Known limitations" below for what this does and doesn't guarantee.
+- No Alembic — schema changes are still made by deleting `backend/beans.db` and restarting (see Commands section).
+
+`PourStep.step_order` has no DB uniqueness constraint by design — the frontend reorders steps by swapping `step_order` between two rows via two sequential updates, which would transiently collide under a unique constraint. Steps are always queried `ORDER BY step_order, id`.
 
 `PourStep.cumulative_water_ml` is the **total water poured by the end of that step**, not a per-step delta — matches how pour-over recipes are conventionally written (e.g. "0:45 → 100g total").
 
-Pydantic schemas (`schemas.py`) follow a `*Base` / `*Create` / `*Update` / `*Out` convention per resource. `BrewLogWithRecipeName` is a list-view-only shape produced by joining `BrewLog` to `Recipe` in the router (`brew_logs.py`) so the frontend doesn't need a second fetch per row for the recipe's name.
-
 ### Frontend
 
-`frontend/src/storage/db.ts` opens a single IndexedDB database (`"beans"`, via the `idb` wrapper) with three object stores — `recipes`, `pourSteps`, `brewLogs` — each keyed by a client-generated `crypto.randomUUID()` `id`; `pourSteps`/`brewLogs` also carry a `by-recipe` index on `recipe_id` for lookups and cascade-delete. `frontend/src/api/client.ts` keeps the same 14 function names/signatures the old fetch-based client had, but now reads/writes IndexedDB directly instead of hitting the backend — views were written against this interface and didn't need to change. `frontend/src/types.ts` mirrors these shapes by hand (all `id`/`recipe_id` fields are `string`, not the backend's `int`); keep them in sync manually when the schema changes.
+`frontend/src/storage/db.ts` opens a single IndexedDB database (`"beans"`, via the `idb` wrapper) with three object stores — `recipes`, `pourSteps`, `brewLogs` — each keyed by a client-generated `crypto.randomUUID()` `id`; `pourSteps`/`brewLogs` also carry a `by-recipe` index on `recipe_id` for lookups and cascade-delete. This `id` is also what becomes the resource's `public_id` on the server once synced — there is no separate ID-remapping step. `frontend/src/api/client.ts` keeps the same 14 function names/signatures the old fetch-based client had, but reads/writes IndexedDB directly — views were written against this interface and didn't need to change. When a user is logged in (`currentUser` in `frontend/src/auth/session.ts` is set), each of the 14 functions' mutating calls additionally fires a non-awaited, error-swallowing single-record push via `frontend/src/sync/orchestrator.ts` (`frontend/src/api/syncClient.ts` is the raw HTTP layer). A full push-then-pull sync (`fullSync()` in `orchestrator.ts`) runs on login, registration, and app mount if already logged in — never on a timer/poll. `frontend/src/types.ts` mirrors backend shapes by hand (all `id`/`recipe_id` fields are `string`, not the backend's internal `int`); keep them in sync manually when the schema changes.
 
 Routing (`frontend/src/router/index.ts`) is view-per-route under `frontend/src/views/`, all lazy-loaded. `RecipeFormView.vue` handles both create and edit (branches on the presence of a route `:id` param); same for `BrewLogFormView.vue`.
 
@@ -57,3 +62,11 @@ Routing (`frontend/src/router/index.ts`) is view-per-route under `frontend/src/v
 `BrewTimerView.vue` is a client-only countup timer: a `setInterval` ticks `elapsed`, compares it against each step's `target_time_sec`, and fires a Web Audio oscillator beep (no audio asset file) the first time each step's threshold is crossed, tracked via a `Set` of triggered step IDs.
 
 Styling is a single hand-written `frontend/src/style.css` (CSS custom properties + a handful of utility classes: `.card`, `.btn`, `.form-row`, `.table`, `.step-row`, `.rating-stars`) — no UI framework. Note `.rating-stars` styles must target both `span` (read-only display in `BrewLogCard.vue`) and `button` (interactive picker in `BrewLogFormView.vue`).
+
+## Known limitations (sync)
+
+These are deliberate v1 scope cuts for a personal-use app, not bugs:
+
+- **Offline deletions can resurrect on the deleting device itself.** A deletion only reaches the server if the deleting device is online at that moment (best-effort immediate push, no offline queue/tombstone on the client). Because `GET /api/sync/pull` unconditionally overwrites any local record present in its response, if a deletion never reached the server, the *deleting device's own next successful sync* will pull that record back from the server and restore it locally — not just fail to propagate to other devices.
+- **IndexedDB is not partitioned per user.** Logging into a different account in the same browser pushes/merges whatever local data currently exists into that other account; there is no per-user IndexedDB namespace.
+- **Conflict resolution is server-authoritative overwrite, not last-write-wins by timestamp.** Every push is an idempotent upsert; whichever push reaches the server last simply wins. There is no vector-clock or timestamp-based conflict detection — acceptable given the low write concurrency expected of a personal app.

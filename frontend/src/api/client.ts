@@ -1,4 +1,14 @@
 import { getDb } from "../storage/db";
+import { currentUser } from "../auth/session";
+import {
+  pushDeletedBrewLog,
+  pushDeletedPourStep,
+  pushDeletedRecipe,
+  pushRecipeWithSteps,
+  pushSingleBrewLog,
+  pushSinglePourStep,
+  pushSingleRecipe,
+} from "../sync/orchestrator";
 import type {
   BrewLog,
   BrewLogInput,
@@ -73,6 +83,7 @@ export async function createRecipe(
     await tx.objectStore("pourSteps").add(step);
   }
   await tx.done;
+  if (currentUser.value) pushRecipeWithSteps(recipe, pour_steps);
   return { ...recipe, pour_steps };
 }
 
@@ -82,6 +93,7 @@ export async function updateRecipe(id: string, data: Partial<RecipeInput>): Prom
   if (!existing) throw new Error(`PUT /recipes/${id} failed: 404 Recipe not found`);
   const updated: Recipe = { ...existing, ...data, updated_at: nowIso() };
   await db.put("recipes", updated);
+  if (currentUser.value) pushSingleRecipe(updated);
   const pour_steps = await getPourStepsForRecipe(id);
   return { ...updated, pour_steps };
 }
@@ -95,6 +107,7 @@ export async function deleteRecipe(id: string): Promise<void> {
   const logKeys = await tx.objectStore("brewLogs").index("by-recipe").getAllKeys(id);
   for (const key of logKeys) await tx.objectStore("brewLogs").delete(key);
   await tx.done;
+  if (currentUser.value) pushDeletedRecipe(id);
 }
 
 // Pour steps
@@ -118,6 +131,7 @@ export async function createPourStep(recipeId: string, data: PourStepCreate): Pr
     notes: data.notes ?? null,
   };
   await db.add("pourSteps", step);
+  if (currentUser.value) pushSinglePourStep(step);
   return step;
 }
 
@@ -135,6 +149,7 @@ export async function updatePourStep(
   }
   const updated: PourStep = { ...existing, ...data };
   await db.put("pourSteps", updated);
+  if (currentUser.value) pushSinglePourStep(updated);
   return updated;
 }
 
@@ -143,6 +158,7 @@ export async function deletePourStep(recipeId: string, stepId: string): Promise<
   const existing = await db.get("pourSteps", stepId);
   if (!existing || existing.recipe_id !== recipeId) return;
   await db.delete("pourSteps", stepId);
+  if (currentUser.value) pushDeletedPourStep(stepId);
 }
 
 // Brew logs
@@ -178,6 +194,7 @@ export async function createBrewLog(data: BrewLogInput): Promise<BrewLog> {
     created_at: nowIso(),
   };
   await db.add("brewLogs", log);
+  if (currentUser.value) pushSingleBrewLog(log);
   return log;
 }
 
@@ -187,10 +204,12 @@ export async function updateBrewLog(id: string, data: Partial<BrewLogInput>): Pr
   if (!existing) throw new Error(`PUT /brew-logs/${id} failed: 404 Brew log not found`);
   const updated: BrewLog = { ...existing, ...data };
   await db.put("brewLogs", updated);
+  if (currentUser.value) pushSingleBrewLog(updated);
   return updated;
 }
 
 export async function deleteBrewLog(id: string): Promise<void> {
   const db = await getDb();
   await db.delete("brewLogs", id);
+  if (currentUser.value) pushDeletedBrewLog(id);
 }
