@@ -47,3 +47,12 @@ npm run lint:fix    # lint (自動修正)
 npm run fmt          # format
 npm run fmt:check    # format (差分チェックのみ)
 ```
+
+## pre-commitフック
+
+コミット時にフロント/バックエンド両方の lint・フォーマットチェック（CIと同じコマンド）を自動実行する。初回のみ以下をセットアップする。
+
+```sh
+uv tool install pre-commit
+pre-commit install
+```
