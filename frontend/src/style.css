@@ -208,7 +208,7 @@ a {
   display: grid;
   grid-template-columns: 2.5rem 1fr 1fr 2fr auto;
   gap: 0.5rem;
-  align-items: center;
+  align-items: start;
   padding: 0.5rem 0;
   border-bottom: 1px solid var(--color-border);
 }
