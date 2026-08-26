@@ -69,3 +69,9 @@ export interface BrewLogInput {
   rating: number;
   notes?: string | null;
 }
+
+export interface UserOut {
+  id: string;
+  email: string;
+  created_at: string;
+}
