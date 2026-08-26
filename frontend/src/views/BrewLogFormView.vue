@@ -9,7 +9,7 @@ const router = useRouter();
 
 const logId = computed(() => {
   const id = route.params.id;
-  return id ? Number(id) : null;
+  return id ? String(id) : null;
 });
 const isEdit = computed(() => logId.value !== null);
 
@@ -34,7 +34,7 @@ onMounted(async () => {
   recipes.value = await listRecipes();
   if (logId.value !== null) {
     const log = await getBrewLog(logId.value);
-    form.recipe_id = String(log.recipe_id);
+    form.recipe_id = log.recipe_id;
     const d = new Date(log.brewed_at);
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     form.brewed_at = d.toISOString().slice(0, 16);
@@ -48,7 +48,7 @@ onMounted(async () => {
 async function onSubmit() {
   saving.value = true;
   const payload = {
-    recipe_id: Number(form.recipe_id),
+    recipe_id: form.recipe_id,
     brewed_at: new Date(form.brewed_at).toISOString(),
     rating: form.rating,
     notes: form.notes || null,

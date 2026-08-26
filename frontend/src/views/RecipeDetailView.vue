@@ -13,12 +13,10 @@ const recipe = ref<RecipeDetail | null>(null);
 const logs = ref<BrewLog[]>([]);
 const loading = ref(true);
 
-const recipeId = () => Number(props.id);
-
 async function load() {
   loading.value = true;
-  recipe.value = await getRecipe(recipeId());
-  logs.value = await listBrewLogs(recipeId());
+  recipe.value = await getRecipe(props.id);
+  logs.value = await listBrewLogs(props.id);
   loading.value = false;
 }
 

@@ -15,7 +15,7 @@ const selectedRecipeId = ref<string>((route.query.recipe_id as string) ?? "");
 
 async function load() {
   loading.value = true;
-  const recipeId = selectedRecipeId.value ? Number(selectedRecipeId.value) : undefined;
+  const recipeId = selectedRecipeId.value || undefined;
   logs.value = await listBrewLogs(recipeId);
   loading.value = false;
 }
