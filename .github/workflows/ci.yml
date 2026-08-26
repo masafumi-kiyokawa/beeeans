@@ -45,3 +45,11 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run fmt:check
+
+  CI:
+    needs: [backend, frontend]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          [ "${{ needs.backend.result }}" = "success" ] && [ "${{ needs.frontend.result }}" = "success" ]
