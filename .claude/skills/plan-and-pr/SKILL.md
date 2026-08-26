@@ -5,7 +5,7 @@ description: Use after finishing a plan for non-trivial work in this repo (a pla
 
 # Plan and PR
 
-Workflow for taking a plan for this repo (`beans`) from approval through merged PR(s).
+Workflow for taking a plan for this repo (`beans`) from approval through merged PR(s). For branch naming, PR title format, and the GitHub merge constraints (required CI check, branch-up-to-date requirement, squash-only), see the `branch-strategy` skill.
 
 ## 1. Persist the plan — one file per PR
 
