@@ -10,11 +10,11 @@ const loading = ref(true);
 
 const elapsed = ref(0);
 const running = ref(false);
-const triggeredStepIds = ref(new Set<number>());
+const triggeredStepIds = ref(new Set<string>());
 let intervalId: number | undefined;
 
 onMounted(async () => {
-  recipe.value = await getRecipe(Number(props.id));
+  recipe.value = await getRecipe(props.id);
   loading.value = false;
 });
 

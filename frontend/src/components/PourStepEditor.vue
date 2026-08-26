@@ -3,11 +3,11 @@ import { onMounted, reactive, ref } from "vue";
 import { createPourStep, deletePourStep, listPourSteps, updatePourStep } from "../api/client";
 import type { PourStep } from "../types";
 
-const props = defineProps<{ recipeId: number }>();
+const props = defineProps<{ recipeId: string }>();
 
 const steps = ref<PourStep[]>([]);
 const loading = ref(true);
-const editingId = ref<number | null>(null);
+const editingId = ref<string | null>(null);
 const editForm = reactive({ time_delta_sec: 0, water_delta_ml: 0, notes: "" });
 const errorMessage = ref<string | null>(null);
 const saving = ref(false);

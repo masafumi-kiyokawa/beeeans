@@ -1,6 +1,6 @@
 export interface PourStep {
-  id: number;
-  recipe_id: number;
+  id: string;
+  recipe_id: string;
   step_order: number;
   target_time_sec: number;
   cumulative_water_ml: number;
@@ -22,7 +22,7 @@ export interface PourStepUpdate {
 }
 
 export interface Recipe {
-  id: number;
+  id: string;
   name: string;
   bean_origin: string | null;
   dose_g: number;
@@ -51,8 +51,8 @@ export interface RecipeInput {
 }
 
 export interface BrewLog {
-  id: number;
-  recipe_id: number;
+  id: string;
+  recipe_id: string;
   brewed_at: string;
   rating: number;
   notes: string | null;
@@ -64,7 +64,7 @@ export interface BrewLogWithRecipeName extends BrewLog {
 }
 
 export interface BrewLogInput {
-  recipe_id: number;
+  recipe_id: string;
   brewed_at: string;
   rating: number;
   notes?: string | null;
