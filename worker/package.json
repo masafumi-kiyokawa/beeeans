@@ -13,10 +13,13 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "better-auth": "^1.7.2",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.9.10"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.0.0",
+    "@types/node": "^26.4.0",
+    "drizzle-kit": "^0.31.10",
     "oxfmt": ">=0.64.0",
     "oxlint": ">=1.79.0",
     "typescript": "~6.0.2",
@@ -24,6 +27,9 @@
   },
   "allowScripts": {
     "esbuild@0.28.1": true,
-    "workerd@1.20260825.1": true
+    "workerd@1.20260825.1": true,
+    "fsevents@2.3.3": true,
+    "esbuild@0.18.20": true,
+    "esbuild@0.25.12": true
   }
 }
