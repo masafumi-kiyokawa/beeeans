@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 # PostToolUse hook: Edit/Write 後に、編集されたファイルが属するディレクトリ
-# (backend/frontend/worker) の lint・format・型チェックを CI/pre-commit と
-# 同じコマンドで実行する。失敗時は exit 2 で stderr を Claude にフィードバックする。
+# (backend/frontend/worker) の lint・format チェックを実行する。
+# .pre-commit-config.yaml の local hooks にそのまま委譲することで、CI/pre-commit
+# と同じルールを二重管理せず常に一致させる。backend の型チェック(uv run ty check)
+# のみ pre-commit に定義が無く CI 専用のため、ここで個別に追加する
+# (worker の型チェックは pre-commit の worker-typecheck hook で既にカバーされる)。
+# 失敗時は exit 2 で stderr を Claude にフィードバックする。
 set -uo pipefail
 
-project_dir="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+if ! command -v jq >/dev/null 2>&1; then
+  echo "lint-format hook: jq が見つからないため lint/format チェックをスキップしました" >&2
+  exit 1
+fi
 
 input=$(cat)
 file_path=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')
@@ -19,50 +26,41 @@ case "$file_path" in
     ;;
 esac
 
-group=""
+file_dir=$(dirname "$file_path")
+# $CLAUDE_PROJECT_DIR はセッション開始時のパスに固定され、worktree セッションでは
+# 実際の作業ディレクトリと一致しないため、編集ファイル自身から git worktree ルートを
+# 都度解決する。
+repo_root=$(cd "$file_dir" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null)
+
+if [ -z "$repo_root" ]; then
+  exit 0
+fi
+
 case "$file_path" in
-  "$project_dir"/backend/*) group="backend" ;;
-  "$project_dir"/frontend/*) group="frontend" ;;
-  "$project_dir"/worker/*) group="worker" ;;
+  "$repo_root"/backend/*|"$repo_root"/frontend/*|"$repo_root"/worker/*) ;;
   *) exit 0 ;;
-esac
-
-target_dir="$project_dir/$group"
-
-case "$group" in
-  backend)
-    commands=(
-      "uv run ruff check ."
-      "uv run ruff format --check ."
-      "uv run ty check"
-    )
-    ;;
-  frontend)
-    commands=(
-      "npm run lint"
-      "npm run fmt:check"
-    )
-    ;;
-  worker)
-    commands=(
-      "npm run typecheck"
-      "npm run lint"
-      "npm run fmt:check"
-    )
-    ;;
 esac
 
 had_failure=0
 failure_log=""
 
-for cmd in "${commands[@]}"; do
-  cmd_output=$(cd "$target_dir" && eval "$cmd" 2>&1)
-  cmd_status=$?
-  if [ "$cmd_status" -ne 0 ]; then
-    had_failure=1
-    failure_log+=$'\n'"\$ (cd ${group} && ${cmd})"$'\n'"${cmd_output}"$'\n'
-  fi
-done
+pc_output=$(cd "$repo_root" && pre-commit run --files "$file_path" 2>&1)
+pc_status=$?
+if [ "$pc_status" -ne 0 ]; then
+  had_failure=1
+  failure_log+=$'\n'"\$ pre-commit run --files ${file_path}"$'\n'"${pc_output}"$'\n'
+fi
+
+case "$file_path" in
+  "$repo_root"/backend/*)
+    ty_output=$(cd "$repo_root/backend" && uv run ty check 2>&1)
+    ty_status=$?
+    if [ "$ty_status" -ne 0 ]; then
+      had_failure=1
+      failure_log+=$'\n'"\$ (cd backend && uv run ty check)"$'\n'"${ty_output}"$'\n'
+    fi
+    ;;
+esac
 
 if [ "$had_failure" -ne 0 ]; then
   printf '%s\n' "$failure_log" >&2
