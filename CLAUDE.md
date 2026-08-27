@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Hand-drip (pour-over) coffee recipe manager: FastAPI + SQLAlchemy + SQLite backend, Vue 3 + Vite + TypeScript frontend. Monorepo with `backend/` and `frontend/` at the root.
 
+**A migration to Cloudflare is in progress.** `backend/` (Python/FastAPI) is being replaced by `worker/`, a Cloudflare Worker built with Hono, Drizzle ORM, and Cloudflare D1, with authentication moving from the custom bcrypt+session-cookie implementation in `backend/app/auth.py` to `better-auth`. This is driven by three requirements: zero ongoing hosting cost, `better-auth` for auth (TypeScript-only, no Python support), and Cloudflare as the sole vendor — see `.claude/plans/` history for the phased plan. As of the current state, `worker/` only serves static assets (the built `frontend/dist`) plus a `/api/health` route; `backend/` is still the live implementation the frontend's `authClient.ts`/`syncClient.ts` actually talk to. Treat the "Backend" section below as still describing the current (soon to be replaced) FastAPI implementation until that migration's later phases land.
+
 **Persistence is local-first, with optional server-side sync.** The browser's IndexedDB (`frontend/src/storage/db.ts`) is always the source of truth for the UI, and login is never required — recipe/pour-step/brew-log data works fully offline with zero backend calls. If a user registers/logs in (email + password, session-cookie based — see `backend/app/auth.py`), the app additionally makes a best-effort attempt to mirror that data to the backend via `POST /api/sync/push` / `GET /api/sync/pull` (`backend/app/routers/sync.py`), so the same data becomes available on other devices under the same account. Logged-out usage is unaffected by any of this — see "Known limitations" below for the sync design's accepted tradeoffs.
 
 ## Commands
@@ -33,6 +35,10 @@ No test suite is configured; `npm run build` is the type-check gate, and `npm ru
 The backend does **not** need to be running for the frontend to function while logged out (see the local-first note above). `frontend/.env.development`'s `VITE_API_BASE_URL` is used by both `frontend/src/api/authClient.ts` and `frontend/src/api/syncClient.ts`. CORS in `backend/app/main.py` only allows `localhost:5173`/`127.0.0.1:5173`, with `allow_credentials=True` (required for the session cookie).
 
 ## Architecture
+
+### Worker (Cloudflare migration target)
+
+`worker/` is a Hono app deployed as a single Cloudflare Worker via `worker/wrangler.jsonc`. It serves the built frontend (`frontend/dist`, referenced via `assets.directory`) as static assets, with `assets.run_worker_first: ["/api/*"]` so `/api/*` requests are routed to the Hono app (`worker/src/index.ts`) instead of falling through to the static-asset SPA fallback — the two `assets` settings (`not_found_handling: "single-page-application"` for everything else, `run_worker_first` for `/api/*`) must both stay in place for the SPA's `createWebHistory()` client-side routing and the API to coexist on one Worker. Currently only `/api/health` exists; auth (`better-auth`) and the sync API (Drizzle + D1, porting `backend/app/routers/sync.py`) land in later phases. `worker/` uses the same oxlint/oxfmt tooling as `frontend/` for consistency.
 
 ### Backend
 

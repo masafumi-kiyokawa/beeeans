@@ -28,3 +28,24 @@ repos:
         language: system
         pass_filenames: false
         files: ^frontend/
+
+      - id: worker-typecheck
+        name: worker typecheck
+        entry: bash -c 'cd worker && npm run typecheck'
+        language: system
+        pass_filenames: false
+        files: ^worker/
+
+      - id: worker-lint
+        name: worker oxlint
+        entry: bash -c 'cd worker && npm run lint'
+        language: system
+        pass_filenames: false
+        files: ^worker/
+
+      - id: worker-fmt-check
+        name: worker oxfmt check
+        entry: bash -c 'cd worker && npm run fmt:check'
+        language: system
+        pass_filenames: false
+        files: ^worker/
