@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # PostToolUse hook: Edit/Write 後に、編集されたファイルが属するディレクトリ
-# (backend/frontend/worker) の lint・format チェックを実行する。
+# (frontend/worker) の lint・format チェックを実行する。
 # .pre-commit-config.yaml の local hooks にそのまま委譲することで、CI/pre-commit
-# と同じルールを二重管理せず常に一致させる。backend の型チェック(uv run ty check)
-# のみ pre-commit に定義が無く CI 専用のため、ここで個別に追加する
-# (worker の型チェックは pre-commit の worker-typecheck hook で既にカバーされる)。
+# と同じルールを二重管理せず常に一致させる。
 # 失敗時は exit 2 で stderr を Claude にフィードバックする。
 set -uo pipefail
 
@@ -21,7 +19,7 @@ if [ -z "$file_path" ]; then
 fi
 
 case "$file_path" in
-  */node_modules/*|*/dist/*|*/.venv/*)
+  */node_modules/*|*/dist/*)
     exit 0
     ;;
 esac
@@ -37,7 +35,7 @@ if [ -z "$repo_root" ]; then
 fi
 
 case "$file_path" in
-  "$repo_root"/backend/*|"$repo_root"/frontend/*|"$repo_root"/worker/*) ;;
+  "$repo_root"/frontend/*|"$repo_root"/worker/*) ;;
   *) exit 0 ;;
 esac
 
@@ -50,17 +48,6 @@ if [ "$pc_status" -ne 0 ]; then
   had_failure=1
   failure_log+=$'\n'"\$ pre-commit run --files ${file_path}"$'\n'"${pc_output}"$'\n'
 fi
-
-case "$file_path" in
-  "$repo_root"/backend/*)
-    ty_output=$(cd "$repo_root/backend" && uv run ty check 2>&1)
-    ty_status=$?
-    if [ "$ty_status" -ne 0 ]; then
-      had_failure=1
-      failure_log+=$'\n'"\$ (cd backend && uv run ty check)"$'\n'"${ty_output}"$'\n'
-    fi
-    ;;
-esac
 
 if [ "$had_failure" -ne 0 ]; then
   printf '%s\n' "$failure_log" >&2

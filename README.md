@@ -4,30 +4,10 @@
 
 ## 構成
 
-- `backend/` — FastAPI + SQLAlchemy + SQLite(旧実装。`worker/`への移行が完了し、フロントエンドはもう呼んでいない。本番デプロイ確認後に削除予定。詳細はCLAUDE.md参照)
 - `frontend/` — Vue3 + Vite + TypeScript
-- `worker/` — Cloudflare Worker(Hono + Drizzle + D1 + better-auth)。`backend/`の移行先で、認証・同期APIともに実装済み
+- `worker/` — Cloudflare Worker(Hono + Drizzle + D1 + better-auth)。認証・同期APIを実装
 
 ## 起動方法
-
-### バックエンド
-
-```sh
-cd backend
-uv sync
-uv run uvicorn app.main:app --reload --port 8000
-```
-
-`http://localhost:8000/docs` で Swagger UI を確認できる。
-
-lint / format / 型チェック:
-
-```sh
-cd backend
-uv run ruff check .          # lint
-uv run ruff format .         # format
-uv run ty check              # 型チェック
-```
 
 ### フロントエンド
 
@@ -39,7 +19,7 @@ npm run dev
 
 `http://localhost:5173` でアプリにアクセスできる。
 
-lint / format:
+lint / format / テスト:
 
 ```sh
 cd frontend
@@ -47,6 +27,7 @@ npm run lint        # lint
 npm run lint:fix    # lint (自動修正)
 npm run fmt          # format
 npm run fmt:check    # format (差分チェックのみ)
+npm run test         # vitest(CIには未組み込み。手動で実行する)
 ```
 
 ### Cloudflare Worker
@@ -68,29 +49,31 @@ npm run lint
 npm run fmt:check
 ```
 
-### 本番デプロイ(Cloudflare)
-
-アカウント認証が必要なため、以下は各自の手元で実行する(エージェントは代行しない)。
+D1スキーマを変更した場合:
 
 ```sh
 cd worker
-npx wrangler login                        # 初回のみ、ブラウザでCloudflareアカウント認証
-npx wrangler d1 create beans-db           # 本番用D1データベースを作成
+# worker/src/db/schema.ts を編集した後
+npx drizzle-kit generate                              # worker/drizzle/ にマイグレーションSQLを生成
+npx wrangler d1 migrations apply beans-db --local      # ローカルD1に適用
 ```
 
-`wrangler d1 create`の出力に含まれる`database_id`を`worker/wrangler.jsonc`の`d1_databases[0].database_id`(現在はローカル開発用のプレースホルダー`00000000-...`)に置き換える。
+### 本番デプロイ(Cloudflare)
+
+アカウント認証が必要な操作(初回の`wrangler login`)以外は、以下のコマンドで随時デプロイできる。
 
 ```sh
-npx wrangler d1 migrations apply beans-db --remote   # 本番D1にスキーマを反映
+cd worker
+npx wrangler d1 migrations apply beans-db --remote   # 本番D1にスキーマ変更を反映(必要な場合のみ)
 cd ../frontend && npm run build                       # frontend/dist を最新化
 cd ../worker && npx wrangler deploy                   # デプロイ
 ```
 
-デプロイ後は`https://<worker名>.<アカウント>.workers.dev`でアクセスできる。本番ビルドは`frontend/.env.production`により同一オリジン(`/api`)を使うため、Worker側の追加設定は不要。
+デプロイ後のURLは`wrangler deploy`の出力に表示される(`https://beans-worker.<アカウント固有のサブドメイン>.workers.dev`)。本番ビルドは`frontend/.env.production`により同一オリジン(`/api`)を使うため、Worker側の追加設定は不要。
 
 ## pre-commitフック
 
-コミット時にフロント/バックエンド/worker全ての lint・フォーマットチェック（CIと同じコマンド）を自動実行する。初回のみ以下をセットアップする。
+コミット時にフロントエンド/worker全ての lint・フォーマットチェック（CIと同じコマンド）を自動実行する。初回のみ以下をセットアップする。
 
 ```sh
 uv tool install pre-commit
