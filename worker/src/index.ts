@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createAuth } from "./auth";
+import { syncApp } from "./routes/sync";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -17,5 +18,7 @@ app.use(
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
 app.on(["GET", "POST"], "/api/auth/*", (c) => createAuth(c.env).handler(c.req.raw));
+
+app.route("/api/sync", syncApp);
 
 export default app;
