@@ -47,6 +47,8 @@ npm run test      # vitest run
 
 The Worker does **not** need to be running for the frontend to function while logged out (see the local-first note above). `frontend/.env.development`'s `VITE_API_BASE_URL` (used by `frontend/src/api/syncClient.ts`) and `VITE_AUTH_BASE_URL` (used by `frontend/src/auth/authClient.ts`) both point at `worker/`'s local dev origin (`http://localhost:8787`) — the split exists because `better-auth`'s client appends its own `/api/auth` base path, while the sync client's base URL already includes `/api`. `worker/src/index.ts` applies Hono's `cors()` to `/api/*` for this cross-origin local-dev setup; production needs no CORS since frontend and Worker share one origin.
 
+`frontend/.env.production` sets `VITE_API_BASE_URL=/api` (a relative path works fine since production is same-origin) and `VITE_AUTH_BASE_URL=` (deliberately empty — better-auth's client treats a falsy `baseURL` as "derive from `window.location.origin`", so leaving it empty rather than hardcoding a domain keeps the build portable across `*.workers.dev` and any future custom domain).
+
 ## Architecture
 
 ### Worker (Cloudflare migration target)
