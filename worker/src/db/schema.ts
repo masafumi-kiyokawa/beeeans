@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -85,6 +85,100 @@ export const verification = sqliteTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
+
+// ---- Sync (Recipe/PourStep/BrewLog) ----
+//
+// Ported from backend/app/models.py. `publicId` is the client-generated UUID
+// (frontend/src/storage/db.ts's IndexedDB `id`), stored here with no server-side
+// default — unlike better-auth's own text ids, the sync client always supplies it.
+// The internal auto-increment `id` is never exposed to clients, per
+// .claude/skills/secure-resource-access/SKILL.md. `pourStep`/`brewLog` have no
+// `userId` column of their own; ownership is checked by joining to `recipe.userId`.
+
+export const recipe = sqliteTable(
+  "recipe",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    publicId: text("public_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    beanOrigin: text("bean_origin"),
+    doseG: real("dose_g").notNull(),
+    waterMl: real("water_ml").notNull(),
+    waterTempC: real("water_temp_c").notNull(),
+    grindSize: text("grind_size"),
+    totalTimeSec: integer("total_time_sec"),
+    notes: text("notes"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    uniqueIndex("recipe_public_id_idx").on(table.publicId),
+    index("recipe_userId_idx").on(table.userId),
+  ],
+);
+
+export const pourStep = sqliteTable(
+  "pour_step",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    publicId: text("public_id").notNull(),
+    recipeId: integer("recipe_id")
+      .notNull()
+      .references(() => recipe.id, { onDelete: "cascade" }),
+    stepOrder: integer("step_order").notNull(),
+    targetTimeSec: integer("target_time_sec").notNull(),
+    cumulativeWaterMl: real("cumulative_water_ml").notNull(),
+    notes: text("notes"),
+    deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    uniqueIndex("pour_step_public_id_idx").on(table.publicId),
+    index("pour_step_recipeId_idx").on(table.recipeId),
+  ],
+);
+
+export const brewLog = sqliteTable(
+  "brew_log",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    publicId: text("public_id").notNull(),
+    recipeId: integer("recipe_id")
+      .notNull()
+      .references(() => recipe.id, { onDelete: "cascade" }),
+    brewedAt: integer("brewed_at", { mode: "timestamp_ms" }).notNull(),
+    rating: integer("rating").notNull(),
+    notes: text("notes"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    uniqueIndex("brew_log_public_id_idx").on(table.publicId),
+    index("brew_log_recipeId_idx").on(table.recipeId),
+  ],
+);
+
+export const recipeRelations = relations(recipe, ({ many }) => ({
+  pourSteps: many(pourStep),
+  brewLogs: many(brewLog),
+}));
+
+export const pourStepRelations = relations(pourStep, ({ one }) => ({
+  recipe: one(recipe, {
+    fields: [pourStep.recipeId],
+    references: [recipe.id],
+  }),
+}));
+
+export const brewLogRelations = relations(brewLog, ({ one }) => ({
+  recipe: one(recipe, {
+    fields: [brewLog.recipeId],
+    references: [recipe.id],
+  }),
+}));
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
