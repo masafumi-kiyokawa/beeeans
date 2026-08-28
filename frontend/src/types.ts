@@ -73,5 +73,5 @@ export interface BrewLogInput {
 export interface UserOut {
   id: string;
   email: string;
-  created_at: string;
+  createdAt: Date;
 }

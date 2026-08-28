@@ -1,30 +1,33 @@
 import { ref } from "vue";
-import { fetchCurrentUser, loginUser, logoutUser, registerUser } from "../api/authClient";
+import { authClient } from "./authClient";
 import { fullSync } from "../sync/orchestrator";
 import type { UserOut } from "../types";
 
 export const currentUser = ref<UserOut | null>(null);
 
 export async function refreshCurrentUser(): Promise<void> {
-  try {
-    currentUser.value = await fetchCurrentUser();
-    await fullSync();
-  } catch {
-    currentUser.value = null;
-  }
+  const { data } = await authClient.getSession();
+  currentUser.value = data?.user ?? null;
+  if (currentUser.value) await fullSync();
 }
 
 export async function login(email: string, password: string): Promise<void> {
-  currentUser.value = await loginUser({ email, password });
+  const { data, error } = await authClient.signIn.email({ email, password });
+  if (error) throw new Error(error.message ?? "ログインに失敗しました。");
+  currentUser.value = data.user;
   await fullSync();
 }
 
 export async function register(email: string, password: string): Promise<void> {
-  currentUser.value = await registerUser({ email, password });
+  // better-auth requires a `name`; this app has no separate name field, so the
+  // email doubles as the display name (not surfaced anywhere but the account record).
+  const { data, error } = await authClient.signUp.email({ email, password, name: email });
+  if (error) throw new Error(error.message ?? "登録に失敗しました。");
+  currentUser.value = data.user;
   await fullSync();
 }
 
 export async function logout(): Promise<void> {
-  await logoutUser();
+  await authClient.signOut();
   currentUser.value = null;
 }

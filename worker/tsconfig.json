@@ -4,7 +4,6 @@
     "lib": ["ES2023"],
     "module": "es2022",
     "moduleResolution": "bundler",
-    "types": ["@cloudflare/workers-types"],
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -12,5 +11,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "worker-configuration.d.ts", "drizzle.config.ts"]
 }
