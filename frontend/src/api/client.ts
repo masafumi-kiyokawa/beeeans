@@ -63,7 +63,6 @@ export async function createRecipe(
   const recipe: Recipe = {
     id: newId(),
     name: recipeFields.name,
-    bean_origin: recipeFields.bean_origin ?? null,
     bean_id: recipeFields.bean_id ?? null,
     dose_g: recipeFields.dose_g,
     water_ml: recipeFields.water_ml,

@@ -50,7 +50,6 @@ onMounted(load);
         <p class="muted" v-if="recipe.bean_id && beanNameById.get(recipe.bean_id)">
           {{ beanNameById.get(recipe.bean_id) }}
         </p>
-        <p class="muted" v-else-if="recipe.bean_origin">{{ recipe.bean_origin }}</p>
         <p class="muted">
           豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃
           <template v-if="recipe.grind_size"> / 挽き目 {{ recipe.grind_size }}</template>

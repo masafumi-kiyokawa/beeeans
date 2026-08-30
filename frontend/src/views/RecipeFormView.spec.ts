@@ -15,7 +15,6 @@ import RecipeFormView from "./RecipeFormView.vue";
 const existingRecipe = {
   id: "r1",
   name: "Existing",
-  bean_origin: null,
   dose_g: 18,
   water_ml: 280,
   water_temp_c: 90,
@@ -95,7 +94,6 @@ describe("RecipeFormView.vue", () => {
     expect(clientMocks.createRecipe).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "New Recipe",
-        bean_origin: null,
         grind_size: null,
         notes: null,
       }),
@@ -107,12 +105,16 @@ describe("RecipeFormView.vue", () => {
     clientMocks.createRecipe.mockResolvedValue({ ...existingRecipe, id: "new-id" });
     const { wrapper } = await mountCreate();
     await wrapper.find("#name").setValue("Remembered Recipe");
-    await wrapper.find("#origin").setValue("Ethiopia");
+    await wrapper.find("#grind").setValue("中細挽き");
     await wrapper.find("form").trigger("submit");
     await flushPromises();
 
     const saved = JSON.parse(localStorage.getItem("beans:last-recipe-input") ?? "null");
-    expect(saved).toMatchObject({ name: "Remembered Recipe", bean_origin: "Ethiopia", dose_g: 20 });
+    expect(saved).toMatchObject({
+      name: "Remembered Recipe",
+      grind_size: "中細挽き",
+      dose_g: 20,
+    });
   });
 
   it("pre-fills a new create-mode form with the last saved input", async () => {
@@ -120,7 +122,6 @@ describe("RecipeFormView.vue", () => {
       "beans:last-recipe-input",
       JSON.stringify({
         name: "Remembered Recipe",
-        bean_origin: "Ethiopia",
         dose_g: 18,
         water_ml: 280,
         water_temp_c: 90,
@@ -132,7 +133,7 @@ describe("RecipeFormView.vue", () => {
     const { wrapper } = await mountCreate();
 
     expect((wrapper.find("#name").element as HTMLInputElement).value).toBe("Remembered Recipe");
-    expect((wrapper.find("#origin").element as HTMLInputElement).value).toBe("Ethiopia");
+    expect((wrapper.find("#grind").element as HTMLInputElement).value).toBe("中細挽き");
     expect((wrapper.find("#dose").element as HTMLInputElement).value).toBe("18");
     expect((wrapper.find("#water").element as HTMLInputElement).value).toBe("280");
   });
@@ -142,7 +143,6 @@ describe("RecipeFormView.vue", () => {
       "beans:last-recipe-input",
       JSON.stringify({
         name: "Remembered Recipe",
-        bean_origin: "Ethiopia",
         dose_g: 18,
         water_ml: 280,
         water_temp_c: 90,
@@ -156,9 +156,8 @@ describe("RecipeFormView.vue", () => {
     expect((wrapper.find("#name").element as HTMLInputElement).value).toBe("Existing");
   });
 
-  it("converts null bean_origin/grind_size/notes to empty strings when populating the edit form", async () => {
+  it("converts null grind_size/notes to empty strings when populating the edit form", async () => {
     const { wrapper } = await mountEdit();
-    expect((wrapper.find("#origin").element as HTMLInputElement).value).toBe("");
     expect((wrapper.find("#grind").element as HTMLInputElement).value).toBe("");
     expect((wrapper.find("#notes").element as HTMLTextAreaElement).value).toBe("");
     expect((wrapper.find("#name").element as HTMLInputElement).value).toBe("Existing");
@@ -173,7 +172,7 @@ describe("RecipeFormView.vue", () => {
 
     expect(clientMocks.updateRecipe).toHaveBeenCalledWith(
       "r1",
-      expect.objectContaining({ bean_origin: null, grind_size: null, notes: null }),
+      expect.objectContaining({ grind_size: null, notes: null }),
     );
     expect(push).toHaveBeenCalledWith("/recipes/r1");
   });
@@ -189,7 +188,6 @@ describe("RecipeFormView.vue", () => {
       "beans:last-recipe-input",
       JSON.stringify({
         name: "Remembered Recipe",
-        bean_origin: "Ethiopia",
         bean_id: "bean-old",
         dose_g: 18,
         water_ml: 280,

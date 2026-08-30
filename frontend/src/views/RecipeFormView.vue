@@ -18,7 +18,6 @@ const beans = ref<Bean[]>([]);
 
 const form = reactive({
   name: "",
-  bean_origin: "",
   bean_id: "",
   dose_g: 20,
   water_ml: 300,
@@ -35,7 +34,6 @@ onMounted(async () => {
   if (recipeId.value !== null) {
     const recipe = await getRecipe(recipeId.value);
     form.name = recipe.name;
-    form.bean_origin = recipe.bean_origin ?? "";
     form.bean_id = recipe.bean_id ?? "";
     form.dose_g = recipe.dose_g;
     form.water_ml = recipe.water_ml;
@@ -47,7 +45,6 @@ onMounted(async () => {
     const lastInput = loadLastRecipeInput();
     if (lastInput) {
       form.name = lastInput.name;
-      form.bean_origin = lastInput.bean_origin;
       form.bean_id = lastInput.bean_id ?? "";
       form.dose_g = lastInput.dose_g;
       form.water_ml = lastInput.water_ml;
@@ -68,7 +65,6 @@ async function onSubmit() {
   saving.value = true;
   const payload = {
     name: form.name,
-    bean_origin: form.bean_origin || null,
     bean_id: form.bean_id || null,
     dose_g: form.dose_g,
     water_ml: form.water_ml,
@@ -85,7 +81,6 @@ async function onSubmit() {
       const recipe = await createRecipe(payload);
       saveLastRecipeInput({
         name: form.name,
-        bean_origin: form.bean_origin,
         bean_id: form.bean_id || null,
         dose_g: form.dose_g,
         water_ml: form.water_ml,
@@ -109,10 +104,6 @@ async function onSubmit() {
       <div class="form-row">
         <label for="name">レシピ名</label>
         <input id="name" v-model="form.name" required />
-      </div>
-      <div class="form-row">
-        <label for="origin">豆の産地・銘柄</label>
-        <input id="origin" v-model="form.bean_origin" placeholder="例: エチオピア イルガチェフェ" />
       </div>
       <div class="form-row">
         <label for="bean">登録済みの豆</label>

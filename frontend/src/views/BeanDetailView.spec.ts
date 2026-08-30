@@ -27,7 +27,6 @@ const bean = {
 const recipeUsingBean = {
   id: "r1",
   name: "Morning Cup",
-  bean_origin: null,
   bean_id: "b1",
   dose_g: 20,
   water_ml: 300,

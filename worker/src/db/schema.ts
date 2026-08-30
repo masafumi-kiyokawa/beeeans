@@ -104,12 +104,10 @@ export const recipe = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    beanOrigin: text("bean_origin"),
-    // Optional link to a registered `bean` row, distinct from the free-text
-    // `beanOrigin` above (kept for recipes with no registered bean). Nullable
-    // and `onDelete: "set null"` since a recipe should survive its bean being
-    // removed. Not the wire format's `bean_id`, which is the bean's `publicId` --
-    // see worker/src/routes/sync.ts's resolveBeanId/pull join.
+    // Optional link to a registered `bean` row. Nullable and `onDelete: "set
+    // null"` since a recipe should survive its bean being removed. Not the
+    // wire format's `bean_id`, which is the bean's `publicId` -- see
+    // worker/src/routes/sync.ts's resolveBeanId/pull join.
     beanId: integer("bean_id").references(() => bean.id, { onDelete: "set null" }),
     doseG: real("dose_g").notNull(),
     waterMl: real("water_ml").notNull(),
