@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import router from "./index";
 
 describe("router/index", () => {
-  it("registers all 13 expected named routes with the right paths", () => {
+  it("registers all 14 expected named routes with the right paths", () => {
     const routes = Object.fromEntries(router.getRoutes().map((r) => [r.name, r.path]));
     expect(routes).toEqual({
       "recipe-list": "/",
@@ -15,14 +15,22 @@ describe("router/index", () => {
       "log-edit": "/logs/:id/edit",
       "bean-list": "/beans",
       "bean-new": "/beans/new",
+      "bean-detail": "/beans/:id",
       "bean-edit": "/beans/:id/edit",
       login: "/login",
       register: "/register",
     });
   });
 
-  it("marks recipe-detail, recipe-edit, recipe-brew, log-edit, and bean-edit as props:true routes", () => {
-    const withProps = ["recipe-detail", "recipe-edit", "recipe-brew", "log-edit", "bean-edit"];
+  it("marks recipe-detail, recipe-edit, recipe-brew, log-edit, bean-detail, and bean-edit as props:true routes", () => {
+    const withProps = [
+      "recipe-detail",
+      "recipe-edit",
+      "recipe-brew",
+      "log-edit",
+      "bean-detail",
+      "bean-edit",
+    ];
     for (const name of withProps) {
       const route = router.getRoutes().find((r) => r.name === name);
       expect(route?.props.default).toBe(true);

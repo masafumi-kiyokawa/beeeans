@@ -6,6 +6,7 @@ const clientMocks = vi.hoisted(() => ({
   createRecipe: vi.fn(),
   getRecipe: vi.fn(),
   updateRecipe: vi.fn(),
+  listBeans: vi.fn(),
 }));
 vi.mock("../api/client", () => clientMocks);
 
@@ -38,9 +39,9 @@ function makeRouter() {
   });
 }
 
-async function mountCreate() {
+async function mountCreate(query = "") {
   const router = makeRouter();
-  await router.push("/recipes/new");
+  await router.push(`/recipes/new${query}`);
   await router.isReady();
   const wrapper = mount(RecipeFormView, { global: { plugins: [router] } });
   await flushPromises();
@@ -61,6 +62,7 @@ describe("RecipeFormView.vue", () => {
     clientMocks.createRecipe.mockReset();
     clientMocks.getRecipe.mockReset().mockResolvedValue(existingRecipe);
     clientMocks.updateRecipe.mockReset();
+    clientMocks.listBeans.mockReset().mockResolvedValue([]);
     localStorage.clear();
   });
 
@@ -174,6 +176,45 @@ describe("RecipeFormView.vue", () => {
       expect.objectContaining({ bean_origin: null, grind_size: null, notes: null }),
     );
     expect(push).toHaveBeenCalledWith("/recipes/r1");
+  });
+
+  it("pre-fills bean_id from the ?bean_id= query param in create mode", async () => {
+    clientMocks.listBeans.mockResolvedValue([{ id: "bean-1", name: "Ethiopia" }]);
+    const { wrapper } = await mountCreate("?bean_id=bean-1");
+    expect((wrapper.find("#bean").element as HTMLSelectElement).value).toBe("bean-1");
+  });
+
+  it("prefers the ?bean_id= query param over the remembered last input", async () => {
+    localStorage.setItem(
+      "beans:last-recipe-input",
+      JSON.stringify({
+        name: "Remembered Recipe",
+        bean_origin: "Ethiopia",
+        bean_id: "bean-old",
+        dose_g: 18,
+        water_ml: 280,
+        water_temp_c: 90,
+        grind_size: "中細挽き",
+        total_time_sec: 150,
+        notes: "memo",
+      }),
+    );
+    clientMocks.listBeans.mockResolvedValue([
+      { id: "bean-old", name: "Old" },
+      { id: "bean-new", name: "New" },
+    ]);
+    const { wrapper } = await mountCreate("?bean_id=bean-new");
+    expect((wrapper.find("#bean").element as HTMLSelectElement).value).toBe("bean-new");
+  });
+
+  it("shows a link to edit the selected bean once one is chosen", async () => {
+    clientMocks.listBeans.mockResolvedValue([{ id: "bean-1", name: "Ethiopia" }]);
+    const { wrapper } = await mountCreate();
+    expect(wrapper.findAll("a").find((a) => a.text() === "選択した豆を編集")).toBeUndefined();
+
+    await wrapper.find("#bean").setValue("bean-1");
+    const editLink = wrapper.findAll("a").find((a) => a.text() === "選択した豆を編集");
+    expect(editLink?.attributes("href")).toBe("/beans/bean-1/edit");
   });
 
   it("has no try/catch around submit: a rejection propagates and no error banner is rendered", async () => {

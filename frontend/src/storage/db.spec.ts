@@ -38,12 +38,53 @@ describe("storage/db", () => {
     expect(Array.from(logTx.objectStore("brewLogs").indexNames)).toContain("by-recipe");
   });
 
+  it("exposes a by-bean index on recipes", async () => {
+    const db = await freshDb();
+    const tx = db.transaction("recipes", "readonly");
+    expect(Array.from(tx.objectStore("recipes").indexNames)).toContain("by-bean");
+  });
+
+  it("finds recipes by bean_id via the by-bean index", async () => {
+    const db = await freshDb();
+    await db.add("recipes", {
+      id: "r1",
+      name: "Linked",
+      bean_origin: null,
+      bean_id: "b1",
+      dose_g: 20,
+      water_ml: 300,
+      water_temp_c: 92,
+      grind_size: null,
+      total_time_sec: null,
+      notes: null,
+      created_at: "2026-01-01T00:00:00.000Z",
+      updated_at: "2026-01-01T00:00:00.000Z",
+    });
+    await db.add("recipes", {
+      id: "r2",
+      name: "Unlinked",
+      bean_origin: null,
+      bean_id: null,
+      dose_g: 20,
+      water_ml: 300,
+      water_temp_c: 92,
+      grind_size: null,
+      total_time_sec: null,
+      notes: null,
+      created_at: "2026-01-01T00:00:00.000Z",
+      updated_at: "2026-01-01T00:00:00.000Z",
+    });
+    const results = await db.getAllFromIndex("recipes", "by-bean", "b1");
+    expect(results.map((r) => r.id)).toEqual(["r1"]);
+  });
+
   it("supports put/get/delete round-trip on recipes", async () => {
     const db = await freshDb();
     const recipe: Recipe = {
       id: "r1",
       name: "Test",
       bean_origin: null,
+      bean_id: null,
       dose_g: 20,
       water_ml: 300,
       water_temp_c: 92,

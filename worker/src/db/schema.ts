@@ -105,6 +105,12 @@ export const recipe = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     beanOrigin: text("bean_origin"),
+    // Optional link to a registered `bean` row, distinct from the free-text
+    // `beanOrigin` above (kept for recipes with no registered bean). Nullable
+    // and `onDelete: "set null"` since a recipe should survive its bean being
+    // removed. Not the wire format's `bean_id`, which is the bean's `publicId` --
+    // see worker/src/routes/sync.ts's resolveBeanId/pull join.
+    beanId: integer("bean_id").references(() => bean.id, { onDelete: "set null" }),
     doseG: real("dose_g").notNull(),
     waterMl: real("water_ml").notNull(),
     waterTempC: real("water_temp_c").notNull(),
@@ -118,6 +124,7 @@ export const recipe = sqliteTable(
   (table) => [
     uniqueIndex("recipe_public_id_idx").on(table.publicId),
     index("recipe_userId_idx").on(table.userId),
+    index("recipe_beanId_idx").on(table.beanId),
   ],
 );
 
@@ -188,9 +195,17 @@ export const bean = sqliteTable(
   ],
 );
 
-export const recipeRelations = relations(recipe, ({ many }) => ({
+export const recipeRelations = relations(recipe, ({ one, many }) => ({
   pourSteps: many(pourStep),
   brewLogs: many(brewLog),
+  bean: one(bean, {
+    fields: [recipe.beanId],
+    references: [bean.id],
+  }),
+}));
+
+export const beanRelations = relations(bean, ({ many }) => ({
+  recipes: many(recipe),
 }));
 
 export const pourStepRelations = relations(pourStep, ({ one }) => ({

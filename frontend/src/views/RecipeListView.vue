@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { deleteRecipe, listRecipes } from "../api/client";
+import { deleteRecipe, listBeans, listRecipes } from "../api/client";
 import type { Recipe } from "../types";
 
 const recipes = ref<Recipe[]>([]);
+const beanNameById = ref(new Map<string, string>());
 const loading = ref(true);
 
 async function load() {
   loading.value = true;
-  recipes.value = await listRecipes();
+  const [loadedRecipes, beans] = await Promise.all([listRecipes(), listBeans()]);
+  recipes.value = loadedRecipes;
+  beanNameById.value = new Map(beans.map((b) => [b.id, b.name]));
   loading.value = false;
 }
 
@@ -44,7 +47,10 @@ onMounted(load);
             ><strong>{{ recipe.name }}</strong></RouterLink
           >
         </div>
-        <p class="muted" v-if="recipe.bean_origin">{{ recipe.bean_origin }}</p>
+        <p class="muted" v-if="recipe.bean_id && beanNameById.get(recipe.bean_id)">
+          {{ beanNameById.get(recipe.bean_id) }}
+        </p>
+        <p class="muted" v-else-if="recipe.bean_origin">{{ recipe.bean_origin }}</p>
         <p class="muted">
           豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃
           <template v-if="recipe.grind_size"> / 挽き目 {{ recipe.grind_size }}</template>

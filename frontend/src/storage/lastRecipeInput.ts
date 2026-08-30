@@ -3,6 +3,7 @@ const STORAGE_KEY = "beans:last-recipe-input";
 export interface LastRecipeInput {
   name: string;
   bean_origin: string;
+  bean_id: string | null;
   dose_g: number;
   water_ml: number;
   water_temp_c: number;
