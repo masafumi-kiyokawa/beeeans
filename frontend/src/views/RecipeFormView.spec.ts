@@ -61,6 +61,7 @@ describe("RecipeFormView.vue", () => {
     clientMocks.createRecipe.mockReset();
     clientMocks.getRecipe.mockReset().mockResolvedValue(existingRecipe);
     clientMocks.updateRecipe.mockReset();
+    localStorage.clear();
   });
 
   it("reads route.params.id itself (not via a prop) to decide create vs edit", async () => {
@@ -98,6 +99,59 @@ describe("RecipeFormView.vue", () => {
       }),
     );
     expect(push).toHaveBeenCalledWith("/recipes/new-id");
+  });
+
+  it("saves the submitted values to localStorage as 'last input' after a successful create", async () => {
+    clientMocks.createRecipe.mockResolvedValue({ ...existingRecipe, id: "new-id" });
+    const { wrapper } = await mountCreate();
+    await wrapper.find("#name").setValue("Remembered Recipe");
+    await wrapper.find("#origin").setValue("Ethiopia");
+    await wrapper.find("form").trigger("submit");
+    await flushPromises();
+
+    const saved = JSON.parse(localStorage.getItem("beans:last-recipe-input") ?? "null");
+    expect(saved).toMatchObject({ name: "Remembered Recipe", bean_origin: "Ethiopia", dose_g: 20 });
+  });
+
+  it("pre-fills a new create-mode form with the last saved input", async () => {
+    localStorage.setItem(
+      "beans:last-recipe-input",
+      JSON.stringify({
+        name: "Remembered Recipe",
+        bean_origin: "Ethiopia",
+        dose_g: 18,
+        water_ml: 280,
+        water_temp_c: 90,
+        grind_size: "中細挽き",
+        total_time_sec: 150,
+        notes: "memo",
+      }),
+    );
+    const { wrapper } = await mountCreate();
+
+    expect((wrapper.find("#name").element as HTMLInputElement).value).toBe("Remembered Recipe");
+    expect((wrapper.find("#origin").element as HTMLInputElement).value).toBe("Ethiopia");
+    expect((wrapper.find("#dose").element as HTMLInputElement).value).toBe("18");
+    expect((wrapper.find("#water").element as HTMLInputElement).value).toBe("280");
+  });
+
+  it("does not apply saved 'last input' to an edit-mode form", async () => {
+    localStorage.setItem(
+      "beans:last-recipe-input",
+      JSON.stringify({
+        name: "Remembered Recipe",
+        bean_origin: "Ethiopia",
+        dose_g: 18,
+        water_ml: 280,
+        water_temp_c: 90,
+        grind_size: "中細挽き",
+        total_time_sec: 150,
+        notes: "memo",
+      }),
+    );
+    const { wrapper } = await mountEdit();
+
+    expect((wrapper.find("#name").element as HTMLInputElement).value).toBe("Existing");
   });
 
   it("converts null bean_origin/grind_size/notes to empty strings when populating the edit form", async () => {
