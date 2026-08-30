@@ -3,6 +3,10 @@ name: Deploy
 on:
   push:
     branches: [main]
+    paths:
+      - "frontend/**"
+      - "worker/**"
+      - ".github/workflows/deploy.yml"
 
 concurrency:
   group: deploy-production
