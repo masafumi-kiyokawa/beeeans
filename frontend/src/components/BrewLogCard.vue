@@ -33,13 +33,15 @@ function isWithRecipeName(log: BrewLog | BrewLogWithRecipeName): log is BrewLogW
 
 <template>
   <div class="card">
-    <div class="section-title" style="margin-top: 0">
+    <div class="section-title">
       <div>
         <strong v-if="showRecipeName && isWithRecipeName(log)">{{ log.recipe_name }}</strong>
         <span class="muted">{{ formatDate(log.brewed_at) }}</span>
       </div>
-      <span class="rating-stars">
-        <span v-for="n in 5" :key="n" :class="{ active: n <= log.rating }">★</span>
+      <span class="rating-stars" role="img" :aria-label="`評価 5段階中${log.rating}`">
+        <span v-for="n in 5" :key="n" :class="{ active: n <= log.rating }" aria-hidden="true"
+          >★</span
+        >
       </span>
     </div>
     <p v-if="log.notes">{{ log.notes }}</p>

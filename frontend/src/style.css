@@ -7,6 +7,8 @@
   --color-accent: #8a5a35;
   --color-accent-hover: #6f4527;
   --color-danger: #b0403a;
+  --color-highlight: #fff3d6;
+  --color-rating-active: #e0a326;
   --radius: 8px;
   --spacing: 1rem;
 
@@ -193,6 +195,18 @@ a {
   font-size: 1.1rem;
 }
 
+.section-title:first-child {
+  margin-top: 0;
+}
+
+.stack-top {
+  margin-top: var(--spacing);
+}
+
+.form-row-narrow {
+  max-width: 320px;
+}
+
 .empty-state {
   color: var(--color-text-muted);
   padding: 1rem 0;
@@ -214,7 +228,7 @@ a {
 }
 
 .step-row.current {
-  background: #fff3d6;
+  background: var(--color-highlight);
 }
 
 .step-row.done {
@@ -247,6 +261,11 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+.btn-row-center {
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
 .rating-stars {
   display: flex;
   gap: 0.25rem;
@@ -267,5 +286,5 @@ a {
 
 .rating-stars span.active,
 .rating-stars button.active {
-  color: #e0a326;
+  color: var(--color-rating-active);
 }

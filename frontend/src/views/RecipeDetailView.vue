@@ -39,7 +39,7 @@ async function onDelete() {
 <template>
   <div v-if="loading" class="muted">読み込み中...</div>
   <div v-else-if="recipe">
-    <div class="section-title" style="margin-top: 0">
+    <div class="section-title">
       <h2>{{ recipe.name }}</h2>
       <div class="btn-row">
         <RouterLink class="btn" :to="`/recipes/${recipe.id}/brew`">タイマー開始</RouterLink>

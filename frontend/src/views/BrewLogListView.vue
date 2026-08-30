@@ -38,7 +38,7 @@ watch(selectedRecipeId, (value) => {
       <RouterLink class="btn" to="/logs/new">ログを記録</RouterLink>
     </div>
 
-    <div class="form-row" style="max-width: 320px">
+    <div class="form-row form-row-narrow">
       <label for="recipe-filter">レシピで絞り込み</label>
       <select id="recipe-filter" v-model="selectedRecipeId">
         <option value="">すべて</option>

@@ -89,7 +89,7 @@ const currentStepIndex = computed(() => {
 
     <div class="timer-display">{{ formatTime(elapsed) }}</div>
 
-    <div class="btn-row" style="justify-content: center; margin-bottom: 1.5rem">
+    <div class="btn-row btn-row-center">
       <button class="btn" v-if="!running" @click="start">開始</button>
       <button class="btn btn-secondary" v-else @click="pause">一時停止</button>
       <button class="btn btn-secondary" @click="reset">リセット</button>
@@ -113,7 +113,7 @@ const currentStepIndex = computed(() => {
       </div>
     </div>
 
-    <div v-if="allTriggered" class="btn-row" style="margin-top: 1rem">
+    <div v-if="allTriggered" class="btn-row stack-top">
       <RouterLink class="btn" :to="`/logs/new?recipe_id=${recipe.id}`">ログを記録</RouterLink>
     </div>
   </div>
