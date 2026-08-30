@@ -47,6 +47,7 @@ function makeRouter() {
       { path: "/recipes/:id/edit", component: { template: "<div>edit</div>" } },
       { path: "/recipes/:id/brew", component: { template: "<div>brew</div>" } },
       { path: "/logs/new", component: { template: "<div>log-new</div>" } },
+      { path: "/beans/:id", component: { template: "<div>bean-detail</div>" } },
     ],
   });
 }
@@ -88,6 +89,21 @@ describe("RecipeDetailView.vue", () => {
     expect(wrapper.text()).toContain("medium");
     expect(wrapper.text()).toContain("180");
     expect(wrapper.text()).toContain("notes here");
+  });
+
+  it("links the recipe's bean to its detail page when bean_id resolves to a bean", async () => {
+    clientMocks.getRecipe.mockResolvedValue({ ...recipe, bean_id: "b1" });
+    clientMocks.getBean.mockResolvedValue({ id: "b1", name: "Yirgacheffe" });
+    const { wrapper } = await mountView();
+    // shallow: true stubs RouterLink without rendering its slot, so assert on
+    // the stub's `to` prop rather than a rendered <a href>/link text.
+    expect(wrapper.find('router-link-stub[to="/beans/b1"]').exists()).toBe(true);
+  });
+
+  it("shows no bean link when the recipe has no bean_id", async () => {
+    const { wrapper } = await mountView();
+    expect(clientMocks.getBean).not.toHaveBeenCalled();
+    expect(wrapper.text()).not.toContain("使用した豆");
   });
 
   it("shows the empty-state message when there are no brew logs", async () => {

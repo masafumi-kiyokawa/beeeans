@@ -56,6 +56,11 @@ onMounted(async () => {
       form.total_time_sec = lastInput.total_time_sec;
       form.notes = lastInput.notes;
     }
+    // Arriving from a bean's "新規レシピ" button (BeanDetailView.vue) always
+    // wins over the remembered last input, so the link is never silently lost.
+    if (typeof route.query.bean_id === "string") {
+      form.bean_id = route.query.bean_id;
+    }
   }
 });
 
@@ -115,6 +120,12 @@ async function onSubmit() {
           <option value="">未選択</option>
           <option v-for="b in beans" :key="b.id" :value="b.id">{{ b.name }}</option>
         </select>
+        <p class="muted">
+          <RouterLink to="/beans/new">+ 新しい豆を登録</RouterLink>
+          <template v-if="form.bean_id">
+            ／ <RouterLink :to="`/beans/${form.bean_id}/edit`">選択した豆を編集</RouterLink>
+          </template>
+        </p>
       </div>
       <div class="form-grid">
         <div class="form-row">
