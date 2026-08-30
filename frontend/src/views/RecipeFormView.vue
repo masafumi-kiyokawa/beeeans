@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { createRecipe, getRecipe, updateRecipe } from "../api/client";
+import { createRecipe, getRecipe, listBeans, updateRecipe } from "../api/client";
 import { loadLastRecipeInput, saveLastRecipeInput } from "../storage/lastRecipeInput";
+import type { Bean } from "../types";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,9 +14,12 @@ const recipeId = computed(() => {
 });
 const isEdit = computed(() => recipeId.value !== null);
 
+const beans = ref<Bean[]>([]);
+
 const form = reactive({
   name: "",
   bean_origin: "",
+  bean_id: "",
   dose_g: 20,
   water_ml: 300,
   water_temp_c: 92,
@@ -27,10 +31,12 @@ const form = reactive({
 const saving = ref(false);
 
 onMounted(async () => {
+  beans.value = await listBeans();
   if (recipeId.value !== null) {
     const recipe = await getRecipe(recipeId.value);
     form.name = recipe.name;
     form.bean_origin = recipe.bean_origin ?? "";
+    form.bean_id = recipe.bean_id ?? "";
     form.dose_g = recipe.dose_g;
     form.water_ml = recipe.water_ml;
     form.water_temp_c = recipe.water_temp_c;
@@ -42,12 +48,18 @@ onMounted(async () => {
     if (lastInput) {
       form.name = lastInput.name;
       form.bean_origin = lastInput.bean_origin;
+      form.bean_id = lastInput.bean_id ?? "";
       form.dose_g = lastInput.dose_g;
       form.water_ml = lastInput.water_ml;
       form.water_temp_c = lastInput.water_temp_c;
       form.grind_size = lastInput.grind_size;
       form.total_time_sec = lastInput.total_time_sec;
       form.notes = lastInput.notes;
+    }
+    // Arriving from a bean's "新規レシピ" button (BeanDetailView.vue) always
+    // wins over the remembered last input, so the link is never silently lost.
+    if (typeof route.query.bean_id === "string") {
+      form.bean_id = route.query.bean_id;
     }
   }
 });
@@ -57,6 +69,7 @@ async function onSubmit() {
   const payload = {
     name: form.name,
     bean_origin: form.bean_origin || null,
+    bean_id: form.bean_id || null,
     dose_g: form.dose_g,
     water_ml: form.water_ml,
     water_temp_c: form.water_temp_c,
@@ -73,6 +86,7 @@ async function onSubmit() {
       saveLastRecipeInput({
         name: form.name,
         bean_origin: form.bean_origin,
+        bean_id: form.bean_id || null,
         dose_g: form.dose_g,
         water_ml: form.water_ml,
         water_temp_c: form.water_temp_c,
@@ -99,6 +113,19 @@ async function onSubmit() {
       <div class="form-row">
         <label for="origin">豆の産地・銘柄</label>
         <input id="origin" v-model="form.bean_origin" placeholder="例: エチオピア イルガチェフェ" />
+      </div>
+      <div class="form-row">
+        <label for="bean">登録済みの豆</label>
+        <select id="bean" v-model="form.bean_id">
+          <option value="">未選択</option>
+          <option v-for="b in beans" :key="b.id" :value="b.id">{{ b.name }}</option>
+        </select>
+        <p class="muted">
+          <RouterLink to="/beans/new">+ 新しい豆を登録</RouterLink>
+          <template v-if="form.bean_id">
+            ／ <RouterLink :to="`/beans/${form.bean_id}/edit`">選択した豆を編集</RouterLink>
+          </template>
+        </p>
       </div>
       <div class="form-grid">
         <div class="form-row">

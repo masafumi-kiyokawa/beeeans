@@ -64,6 +64,7 @@ export async function createRecipe(
     id: newId(),
     name: recipeFields.name,
     bean_origin: recipeFields.bean_origin ?? null,
+    bean_id: recipeFields.bean_id ?? null,
     dose_g: recipeFields.dose_g,
     water_ml: recipeFields.water_ml,
     water_temp_c: recipeFields.water_temp_c,
@@ -264,6 +265,18 @@ export async function updateBean(id: string, data: Partial<BeanInput>): Promise<
 
 export async function deleteBean(id: string): Promise<void> {
   const db = await getDb();
-  await db.delete("beans", id);
-  if (currentUser.value) pushDeletedBean(id);
+  // IndexedDB has no FK cascade, so unlink any recipes referencing this bean
+  // ourselves (the server does the equivalent via bean.id's ON DELETE SET
+  // NULL, but that never fires here since sync deletes are soft-deletes).
+  const linkedRecipes = await db.getAllFromIndex("recipes", "by-bean", id);
+  const tx = db.transaction(["beans", "recipes"], "readwrite");
+  await tx.objectStore("beans").delete(id);
+  for (const recipe of linkedRecipes) {
+    await tx.objectStore("recipes").put({ ...recipe, bean_id: null });
+  }
+  await tx.done;
+  if (currentUser.value) {
+    pushDeletedBean(id);
+    for (const recipe of linkedRecipes) pushSingleRecipe({ ...recipe, bean_id: null });
+  }
 }

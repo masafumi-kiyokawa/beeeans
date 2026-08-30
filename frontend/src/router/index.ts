@@ -46,6 +46,12 @@ const router = createRouter({
       component: () => import("../views/BeanFormView.vue"),
     },
     {
+      path: "/beans/:id",
+      name: "bean-detail",
+      component: () => import("../views/BeanDetailView.vue"),
+      props: true,
+    },
+    {
       path: "/beans/:id/edit",
       name: "bean-edit",
       component: () => import("../views/BeanFormView.vue"),

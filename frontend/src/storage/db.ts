@@ -5,6 +5,7 @@ interface BeansDB extends DBSchema {
   recipes: {
     key: string;
     value: Recipe;
+    indexes: { "by-bean": string };
   };
   pourSteps: {
     key: string;
@@ -26,8 +27,8 @@ let dbPromise: Promise<IDBPDatabase<BeansDB>> | undefined;
 
 export function getDb() {
   if (!dbPromise) {
-    dbPromise = openDB<BeansDB>("beans", 2, {
-      upgrade(db, oldVersion) {
+    dbPromise = openDB<BeansDB>("beans", 3, {
+      upgrade(db, oldVersion, _newVersion, transaction) {
         if (oldVersion < 1) {
           db.createObjectStore("recipes", { keyPath: "id" });
           db.createObjectStore("pourSteps", { keyPath: "id" }).createIndex(
@@ -38,6 +39,9 @@ export function getDb() {
         }
         if (oldVersion < 2) {
           db.createObjectStore("beans", { keyPath: "id" });
+        }
+        if (oldVersion < 3) {
+          transaction.objectStore("recipes").createIndex("by-bean", "bean_id");
         }
       },
     });

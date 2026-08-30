@@ -61,6 +61,7 @@ onMounted(load);
         </p>
         <p class="muted" v-if="bean.notes">{{ bean.notes }}</p>
         <div class="btn-row">
+          <RouterLink class="btn btn-secondary" :to="`/beans/${bean.id}`">詳細</RouterLink>
           <RouterLink class="btn btn-secondary" :to="`/beans/${bean.id}/edit`">編集</RouterLink>
           <button class="btn btn-danger" @click="onDelete(bean)">削除</button>
         </div>
