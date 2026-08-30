@@ -15,7 +15,7 @@ description: Enforces this repo's (`beeeans`) frontend design system — colors,
 2. **余白**(2節): インライン `style="margin..."` を追加しない。既存のスペーシングスケール(`0.25rem`〜`1.5rem`)から選ぶか、繰り返し使うなら新しいユーティリティクラスとして `style.css` に切り出す。
 3. **タイポグラフィ**(3節): 見出し/本文/補助テキスト/ラベルの既存サイズ・太さの使い分けに従う。`font-family` は上書きしない。
 4. **ユーティリティクラス**(4節): `.card` `.btn`/`.btn-secondary`/`.btn-danger` `.form-row` `.form-grid` `.table` `.step-row` `.rating-stars` `.section-title` `.empty-state` `.form-error` `.muted` などで表現できないか確認してから独自CSSを追加する。特にボタンはプライマリ/セカンダリ/破壊的の使い分けを守る。
-5. **状態表現**(5節): hover/disabled/エラー/current/done/active の既存パターンに倣う。新しいインタラクティブ要素を追加する場合、キーボードフォーカス/タップ時の見た目をブラウザ既定色(パレット外)に委ねていないか確認する(現状は未定義の既知の課題 — Issue #66)。
+5. **状態表現**(5節): hover/disabled/エラー/current/done/active/focus の既存パターンに倣う。`a`/`button`/`input`/`select`/`textarea` にはキーボードフォーカス時の共通 `:focus-visible` スタイルが既にあるため、これら以外のタグで独自のインタラクティブ要素を作る場合のみ同様のスタイル追加を検討する。
 6. **レスポンシブ**(6節): 新しいブレークポイントを増やす前に、既存の `600px` で足りないか確認する。
 7. **アクセシビリティ最低基準**(7節・8節末尾): 単一入力のラベルは `for`/`id` で関連付ける、アイコンのみの操作要素には `aria-label` を付与する、色だけに依存した状態表現を避ける。
 
