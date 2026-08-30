@@ -133,19 +133,19 @@ async function removeStep(step: PourStep) {
   <div>
     <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
     <div class="step-row step-row-header">
-      <span>#</span>
-      <span>ステップ時間（秒）</span>
-      <span>ステップ湯量（ml）</span>
-      <span>メモ</span>
-      <span>操作</span>
+      <span class="step-row-num">#</span>
+      <span class="step-row-time">ステップ時間（秒）</span>
+      <span class="step-row-water">ステップ湯量（ml）</span>
+      <span class="step-row-notes">メモ</span>
+      <span class="step-row-actions">操作</span>
     </div>
     <p v-if="loading" class="muted">読み込み中...</p>
     <template v-else>
       <p v-if="steps.length === 0" class="empty-state">まだ注湯ステップがありません。</p>
       <div v-for="(step, index) in steps" :key="step.id" class="step-row">
         <template v-if="editingId === step.id">
-          <span>{{ index + 1 }}</span>
-          <div>
+          <span class="step-row-num">{{ index + 1 }}</span>
+          <div class="step-row-time">
             <input
               v-model.number="editForm.time_delta_sec"
               type="number"
@@ -157,7 +157,7 @@ async function removeStep(step: PourStep) {
               {{ formatTime(previousCumulative(index).time + editForm.time_delta_sec) }}</small
             >
           </div>
-          <div>
+          <div class="step-row-water">
             <input
               v-model.number="editForm.water_delta_ml"
               type="number"
@@ -169,24 +169,24 @@ async function removeStep(step: PourStep) {
               >累計 {{ previousCumulative(index).water + editForm.water_delta_ml }}ml</small
             >
           </div>
-          <input v-model="editForm.notes" placeholder="メモ" />
-          <div class="btn-row">
+          <input class="step-row-notes" v-model="editForm.notes" placeholder="メモ" />
+          <div class="step-row-actions btn-row">
             <button class="btn" :disabled="saving" @click="saveEdit(step, index)">保存</button>
             <button class="btn btn-secondary" @click="cancelEdit">取消</button>
           </div>
         </template>
         <template v-else>
-          <span>{{ index + 1 }}</span>
-          <span>
+          <span class="step-row-num">{{ index + 1 }}</span>
+          <span class="step-row-time">
             {{ formatTime(stepDelta(step, index).time) }}
             <small class="step-sub">累計 {{ formatTime(step.target_time_sec) }}</small>
           </span>
-          <span>
+          <span class="step-row-water">
             {{ stepDelta(step, index).water }}ml
             <small class="step-sub">累計 {{ step.cumulative_water_ml }}ml</small>
           </span>
-          <span class="muted">{{ step.notes }}</span>
-          <div class="btn-row">
+          <span class="step-row-notes muted">{{ step.notes }}</span>
+          <div class="step-row-actions btn-row">
             <button class="btn btn-secondary" @click="startEdit(step, index)">編集</button>
             <button class="btn btn-danger" @click="removeStep(step)">削除</button>
           </div>
@@ -197,15 +197,15 @@ async function removeStep(step: PourStep) {
     <div class="form-row stack-top">
       <label id="add-step-label">ステップを追加</label>
       <div class="step-row" role="group" aria-labelledby="add-step-label">
-        <span>-</span>
-        <div>
+        <span class="step-row-num">-</span>
+        <div class="step-row-time">
           <input v-model.number="newStep.time_delta_sec" type="number" min="0" placeholder="秒" />
           <small class="step-sub"
             >累計
             {{ formatTime(previousCumulative(steps.length).time + newStep.time_delta_sec) }}</small
           >
         </div>
-        <div>
+        <div class="step-row-water">
           <input
             v-model.number="newStep.water_delta_ml"
             type="number"
@@ -217,8 +217,8 @@ async function removeStep(step: PourStep) {
             >累計 {{ previousCumulative(steps.length).water + newStep.water_delta_ml }}ml</small
           >
         </div>
-        <input v-model="newStep.notes" placeholder="メモ（任意）" />
-        <button class="btn" :disabled="saving" @click="addStep">追加</button>
+        <input class="step-row-notes" v-model="newStep.notes" placeholder="メモ（任意）" />
+        <button class="step-row-actions btn" :disabled="saving" @click="addStep">追加</button>
       </div>
     </div>
   </div>
