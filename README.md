@@ -60,16 +60,30 @@ npx wrangler d1 migrations apply beans-db --local      # ローカルD1に適用
 
 ### 本番デプロイ(Cloudflare)
 
-アカウント認証が必要な操作(初回の`wrangler login`)以外は、以下のコマンドで随時デプロイできる。
+`main`への変更(PRのsquash merge)を契機に、`.github/workflows/deploy.yml`が本番D1へのマイグレーション適用とWorkerデプロイを自動実行する。人手で行うのは以下の初回セットアップのみ(エージェントは代行しない)。
+
+CI/CDが非対話的にデプロイできるよう、Cloudflare APIトークンを発行してGitHub Actionsのリポジトリシークレットに登録する。
+
+1. Cloudflareダッシュボード →「マイプロフィール」→「APIトークン」→「トークンを作成」で、以下の権限を持つカスタムトークンを作成する。
+   - Account > Workers Scripts > Edit
+   - Account > D1 > Edit
+   - Account > Account Settings > Read
+2. 発行したトークンを`CLOUDFLARE_API_TOKEN`という名前でリポジトリシークレットに登録する。
+   ```sh
+   gh secret set CLOUDFLARE_API_TOKEN
+   ```
+   (またはGitHubの Settings → Secrets and variables → Actions → New repository secret から登録してもよい)
+
+シークレット登録後は、`main`へのマージのたびに以下が自動実行される(`worker/`ディレクトリで):
 
 ```sh
-cd worker
-npx wrangler d1 migrations apply beans-db --remote   # 本番D1にスキーマ変更を反映(必要な場合のみ)
-cd ../frontend && npm run build                       # frontend/dist を最新化
-cd ../worker && npx wrangler deploy                   # デプロイ
+npx wrangler d1 migrations apply beans-db --remote   # 本番D1にスキーマ変更を反映
+npx wrangler deploy                                    # デプロイ(事前にビルドしたfrontend/distを含む)
 ```
 
 デプロイ後のURLは`wrangler deploy`の出力に表示される(`https://beans-worker.<アカウント固有のサブドメイン>.workers.dev`)。本番ビルドは`frontend/.env.production`により同一オリジン(`/api`)を使うため、Worker側の追加設定は不要。
+
+緊急時に手元から手動デプロイする場合は、`wrangler login`(初回のみ、ブラウザでCloudflareアカウント認証)後に上記と同じコマンドを実行すればよいが、通常はこの自動デプロイが正のパスとなる。
 
 ## pre-commitフック
 

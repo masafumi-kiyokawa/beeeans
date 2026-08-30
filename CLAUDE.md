@@ -19,10 +19,12 @@ cd frontend && npm run build    # worker's assets.directory points at frontend/d
 cd worker
 npm install
 npm run dev       # wrangler dev at http://localhost:8787 (local D1 emulation)
-npm run deploy    # wrangler deploy — requires `wrangler login` first (not run by the agent)
+npm run deploy    # wrangler deploy — manual/hotfix use only; requires `wrangler login` first (not run by the agent)
 ```
 
-`npm run typecheck` (`tsc --noEmit`), `npm run lint` (oxlint), `npm run fmt:check` (oxfmt) are required CI gates. No test suite yet. D1 schema changes: edit `worker/src/db/schema.ts`, run `npx drizzle-kit generate` (writes to `worker/drizzle/`), then `npx wrangler d1 migrations apply beans-db --local` (add `--remote` to also apply to the production database — `wrangler.jsonc`'s `d1_databases[0].database_id` is already the real provisioned database's id, not a placeholder). Deploying: `cd frontend && npm run build` (refresh `frontend/dist`) then `cd worker && npx wrangler deploy`; requires `wrangler login` once per machine (not something the agent should run — it's an interactive OAuth flow).
+`npm run typecheck` (`tsc --noEmit`), `npm run lint` (oxlint), `npm run fmt:check` (oxfmt) are required CI gates. No test suite yet. D1 schema changes: edit `worker/src/db/schema.ts`, run `npx drizzle-kit generate` (writes to `worker/drizzle/`), then `npx wrangler d1 migrations apply beans-db --local` to verify locally (`wrangler.jsonc`'s `d1_databases[0].database_id` is already the real provisioned database's id, not a placeholder — `--remote` migrations against it now run automatically in CI/CD rather than by hand, see below).
+
+**Production deploys are automated.** `.github/workflows/deploy.yml` runs on every push to `main` (i.e. every squash-merged PR): it builds `frontend/dist`, then in `worker/` runs `npx wrangler d1 migrations apply beans-db --remote` followed by `npx wrangler deploy`, authenticated via a `CLOUDFLARE_API_TOKEN` repository secret (see README.md's "本番デプロイ(Cloudflare)" section for the one-time secret setup). The manual `npm run deploy`/`--remote` migration commands above remain available for hotfixes but are no longer the primary path — don't run them as part of routine feature work.
 
 ### Frontend (`frontend/`)
 
