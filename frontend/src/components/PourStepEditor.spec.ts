@@ -252,28 +252,4 @@ describe("PourStepEditor.vue", () => {
       expect(clientMocks.deletePourStep).toHaveBeenCalledTimes(2);
     });
   });
-
-  describe("moveStep", () => {
-    it("disables the up-arrow on the first row and the down-arrow on the last row", async () => {
-      const wrapper = await mountEditor();
-      const rows = wrapper.findAll(".step-row:not(.step-row-header)");
-      const firstUp = rows[0].findAll("button")[0];
-      const lastDown = rows[2].findAll("button")[1];
-      expect(firstUp.attributes("disabled")).toBeDefined();
-      expect(lastDown.attributes("disabled")).toBeDefined();
-    });
-
-    it("swaps only step_order via two sequential updatePourStep calls, leaving target_time_sec/cumulative_water_ml untouched", async () => {
-      clientMocks.updatePourStep.mockResolvedValue(steps[0]);
-      const wrapper = await mountEditor();
-      const rows = wrapper.findAll(".step-row:not(.step-row-header)");
-      const downButtons = rows[0].findAll("button");
-      const downBtn = downButtons[1]; // [up, down, edit, delete]
-      await downBtn.trigger("click");
-      await flushPromises();
-
-      expect(clientMocks.updatePourStep).toHaveBeenNthCalledWith(1, "r1", "s1", { step_order: 1 });
-      expect(clientMocks.updatePourStep).toHaveBeenNthCalledWith(2, "r1", "s2", { step_order: 0 });
-    });
-  });
 });

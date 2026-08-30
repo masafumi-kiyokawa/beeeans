@@ -127,22 +127,6 @@ async function removeStep(step: PourStep) {
     errorMessage.value = describeError(e, "ステップの削除に失敗しました。");
   }
 }
-
-async function moveStep(index: number, direction: -1 | 1) {
-  const target = steps.value[index + direction];
-  const current = steps.value[index];
-  if (!target || !current) return;
-  errorMessage.value = null;
-  try {
-    const currentOrder = current.step_order;
-    const targetOrder = target.step_order;
-    await updatePourStep(props.recipeId, current.id, { step_order: targetOrder });
-    await updatePourStep(props.recipeId, target.id, { step_order: currentOrder });
-    await load();
-  } catch (e) {
-    errorMessage.value = describeError(e, "ステップの並べ替えに失敗しました。");
-  }
-}
 </script>
 
 <template>
@@ -203,22 +187,6 @@ async function moveStep(index: number, direction: -1 | 1) {
           </span>
           <span class="muted">{{ step.notes }}</span>
           <div class="btn-row">
-            <button
-              class="btn btn-secondary"
-              aria-label="1つ上に移動"
-              :disabled="index === 0"
-              @click="moveStep(index, -1)"
-            >
-              ↑
-            </button>
-            <button
-              class="btn btn-secondary"
-              aria-label="1つ下に移動"
-              :disabled="index === steps.length - 1"
-              @click="moveStep(index, 1)"
-            >
-              ↓
-            </button>
             <button class="btn btn-secondary" @click="startEdit(step, index)">編集</button>
             <button class="btn btn-danger" @click="removeStep(step)">削除</button>
           </div>
