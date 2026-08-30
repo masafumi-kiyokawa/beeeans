@@ -11,7 +11,6 @@ import BrewLogCard from "../components/BrewLogCard.vue";
 const recipeA = {
   id: "r1",
   name: "Recipe A",
-  bean_origin: null,
   dose_g: 20,
   water_ml: 300,
   water_temp_c: 92,

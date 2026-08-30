@@ -17,7 +17,6 @@ import PourStepEditor from "../components/PourStepEditor.vue";
 const recipe = {
   id: "r1",
   name: "Recipe A",
-  bean_origin: "Ethiopia",
   dose_g: 20,
   water_ml: 300,
   water_temp_c: 92,
@@ -83,9 +82,8 @@ describe("RecipeDetailView.vue", () => {
     expect(wrapper.text()).toContain("Recipe A");
   });
 
-  it("shows conditional fields (bean_origin/grind_size/total_time_sec/notes) only when present", async () => {
+  it("shows conditional fields (grind_size/total_time_sec/notes) only when present", async () => {
     const { wrapper } = await mountView();
-    expect(wrapper.text()).toContain("Ethiopia");
     expect(wrapper.text()).toContain("medium");
     expect(wrapper.text()).toContain("180");
     expect(wrapper.text()).toContain("notes here");

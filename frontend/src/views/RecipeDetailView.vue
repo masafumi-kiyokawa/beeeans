@@ -57,7 +57,6 @@ async function onDelete() {
       <p v-if="bean" class="muted">
         使用した豆: <RouterLink :to="`/beans/${bean.id}`">{{ bean.name }}</RouterLink>
       </p>
-      <p v-if="recipe.bean_origin" class="muted">{{ recipe.bean_origin }}</p>
       <p>
         豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃
         <template v-if="recipe.grind_size"> / 挽き目 {{ recipe.grind_size }}</template>

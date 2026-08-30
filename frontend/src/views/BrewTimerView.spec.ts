@@ -33,7 +33,6 @@ class FakeAudioContext {
 const recipeWithSteps = {
   id: "r1",
   name: "V60",
-  bean_origin: null,
   dose_g: 20,
   water_ml: 300,
   water_temp_c: 92,
