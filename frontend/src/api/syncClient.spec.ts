@@ -31,6 +31,8 @@ const emptyPayload: SyncPushPayload = {
   pour_steps_deleted: [],
   brew_logs: [],
   brew_logs_deleted: [],
+  beans: [],
+  beans_deleted: [],
 };
 
 const emptyPushResult = {
@@ -40,6 +42,8 @@ const emptyPushResult = {
   pour_steps_deleted: 0,
   brew_logs_upserted: 0,
   brew_logs_deleted: 0,
+  beans_upserted: 0,
+  beans_deleted: 0,
 };
 
 describe("api/syncClient", () => {
@@ -109,6 +113,8 @@ describe("api/syncClient", () => {
         pour_steps_deleted: 4,
         brew_logs_upserted: 5,
         brew_logs_deleted: 6,
+        beans_upserted: 7,
+        beans_deleted: 8,
       };
       vi.mocked(fetch).mockResolvedValue(mockResponse({ json: result }) as never);
       expect(await pushSync(emptyPayload)).toEqual(result);

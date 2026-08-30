@@ -1,13 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { BrewLog, PourStep, Recipe } from "../types";
+import type { Bean, BrewLog, PourStep, Recipe } from "../types";
 
-type StoreName = "recipes" | "pourSteps" | "brewLogs";
+type StoreName = "recipes" | "pourSteps" | "brewLogs" | "beans";
 
 const dbState = vi.hoisted(() => ({
   recipes: [] as Recipe[],
   pourSteps: [] as PourStep[],
   brewLogs: [] as BrewLog[],
-  puts: { recipes: [] as unknown[], pourSteps: [] as unknown[], brewLogs: [] as unknown[] },
+  beans: [] as Bean[],
+  puts: {
+    recipes: [] as unknown[],
+    pourSteps: [] as unknown[],
+    brewLogs: [] as unknown[],
+    beans: [] as unknown[],
+  },
 }));
 
 const dbMock = vi.hoisted(() => ({
@@ -42,16 +48,19 @@ const emptyPushResult = {
   pour_steps_deleted: 0,
   brew_logs_upserted: 0,
   brew_logs_deleted: 0,
+  beans_upserted: 0,
+  beans_deleted: 0,
 };
 
-const emptyPullResult = { recipes: [], pour_steps: [], brew_logs: [] };
+const emptyPullResult = { recipes: [], pour_steps: [], brew_logs: [], beans: [] };
 
 describe("sync/orchestrator", () => {
   beforeEach(() => {
     dbState.recipes = [];
     dbState.pourSteps = [];
     dbState.brewLogs = [];
-    dbState.puts = { recipes: [], pourSteps: [], brewLogs: [] };
+    dbState.beans = [];
+    dbState.puts = { recipes: [], pourSteps: [], brewLogs: [], beans: [] };
     syncMocks.pushSync.mockReset().mockResolvedValue(emptyPushResult);
     syncMocks.pullSync.mockReset().mockResolvedValue(emptyPullResult);
   });
@@ -69,6 +78,8 @@ describe("sync/orchestrator", () => {
         pour_steps_deleted: [],
         brew_logs: [],
         brew_logs_deleted: [],
+        beans: [],
+        beans_deleted: [],
       });
     });
 
@@ -85,6 +96,8 @@ describe("sync/orchestrator", () => {
         pour_steps_deleted: [],
         brew_logs: [],
         brew_logs_deleted: [],
+        beans: [],
+        beans_deleted: [],
       });
     });
 
@@ -99,24 +112,36 @@ describe("sync/orchestrator", () => {
         pour_steps_deleted: [],
         brew_logs: [],
         brew_logs_deleted: [],
+        beans: [],
+        beans_deleted: [],
       });
     });
 
-    it("pushSinglePourStep/pushDeletedPourStep/pushSingleBrewLog/pushDeletedBrewLog each populate only their own field", async () => {
-      const { pushSinglePourStep, pushDeletedPourStep, pushSingleBrewLog, pushDeletedBrewLog } =
-        await freshOrchestrator();
+    it("pushSinglePourStep/pushDeletedPourStep/pushSingleBrewLog/pushDeletedBrewLog/pushSingleBean/pushDeletedBean each populate only their own field", async () => {
+      const {
+        pushSinglePourStep,
+        pushDeletedPourStep,
+        pushSingleBrewLog,
+        pushDeletedBrewLog,
+        pushSingleBean,
+        pushDeletedBean,
+      } = await freshOrchestrator();
 
       pushSinglePourStep({ id: "s1" } as PourStep);
       pushDeletedPourStep("s1");
       pushSingleBrewLog({ id: "l1" } as BrewLog);
       pushDeletedBrewLog("l1");
+      pushSingleBean({ id: "b1" } as Bean);
+      pushDeletedBean("b1");
 
-      await vi.waitFor(() => expect(syncMocks.pushSync).toHaveBeenCalledTimes(4));
+      await vi.waitFor(() => expect(syncMocks.pushSync).toHaveBeenCalledTimes(6));
       const payloads = syncMocks.pushSync.mock.calls.map((call) => call[0]);
       expect(payloads[0]).toMatchObject({ pour_steps: [{ id: "s1" }] });
       expect(payloads[1]).toMatchObject({ pour_steps_deleted: ["s1"] });
       expect(payloads[2]).toMatchObject({ brew_logs: [{ id: "l1" }] });
       expect(payloads[3]).toMatchObject({ brew_logs_deleted: ["l1"] });
+      expect(payloads[4]).toMatchObject({ beans: [{ id: "b1" }] });
+      expect(payloads[5]).toMatchObject({ beans_deleted: ["b1"] });
     });
   });
 
@@ -137,11 +162,14 @@ describe("sync/orchestrator", () => {
       dbState.recipes = [{ id: "r1" } as Recipe];
       dbState.pourSteps = [{ id: "s1" } as PourStep];
       dbState.brewLogs = [{ id: "l1" } as BrewLog];
+      dbState.beans = [{ id: "b1" } as Bean];
       const pulledRecipe = { id: "r2" } as Recipe;
+      const pulledBean = { id: "b2" } as Bean;
       syncMocks.pullSync.mockResolvedValue({
         recipes: [pulledRecipe],
         pour_steps: [],
         brew_logs: [],
+        beans: [pulledBean],
       });
 
       const { fullSync } = await freshOrchestrator();
@@ -154,9 +182,12 @@ describe("sync/orchestrator", () => {
         pour_steps_deleted: [],
         brew_logs: dbState.brewLogs,
         brew_logs_deleted: [],
+        beans: dbState.beans,
+        beans_deleted: [],
       });
       expect(syncMocks.pullSync).toHaveBeenCalledTimes(1);
       expect(dbState.puts.recipes).toEqual([pulledRecipe]);
+      expect(dbState.puts.beans).toEqual([pulledBean]);
     });
 
     it("never attempts the pull when the push fails, and resolves without throwing", async () => {

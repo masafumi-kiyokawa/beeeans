@@ -1,15 +1,19 @@
 import { getDb } from "../storage/db";
 import { currentUser } from "../auth/session";
 import {
+  pushDeletedBean,
   pushDeletedBrewLog,
   pushDeletedPourStep,
   pushDeletedRecipe,
   pushRecipeWithSteps,
+  pushSingleBean,
   pushSingleBrewLog,
   pushSinglePourStep,
   pushSingleRecipe,
 } from "../sync/orchestrator";
 import type {
+  Bean,
+  BeanInput,
   BrewLog,
   BrewLogInput,
   BrewLogWithRecipeName,
@@ -212,4 +216,54 @@ export async function deleteBrewLog(id: string): Promise<void> {
   const db = await getDb();
   await db.delete("brewLogs", id);
   if (currentUser.value) pushDeletedBrewLog(id);
+}
+
+// Beans
+export async function listBeans(): Promise<Bean[]> {
+  const db = await getDb();
+  const beans = await db.getAll("beans");
+  return beans.sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export async function getBean(id: string): Promise<Bean> {
+  const db = await getDb();
+  const bean = await db.get("beans", id);
+  if (!bean) throw new Error(`GET /beans/${id} failed: 404 Bean not found`);
+  return bean;
+}
+
+export async function createBean(data: BeanInput): Promise<Bean> {
+  const db = await getDb();
+  const timestamp = nowIso();
+  const bean: Bean = {
+    id: newId(),
+    name: data.name,
+    origin: data.origin ?? null,
+    roaster: data.roaster ?? null,
+    roast_level: data.roast_level ?? null,
+    roast_date: data.roast_date ?? null,
+    purchase_url: data.purchase_url ?? null,
+    notes: data.notes ?? null,
+    created_at: timestamp,
+    updated_at: timestamp,
+  };
+  await db.add("beans", bean);
+  if (currentUser.value) pushSingleBean(bean);
+  return bean;
+}
+
+export async function updateBean(id: string, data: Partial<BeanInput>): Promise<Bean> {
+  const db = await getDb();
+  const existing = await db.get("beans", id);
+  if (!existing) throw new Error(`PUT /beans/${id} failed: 404 Bean not found`);
+  const updated: Bean = { ...existing, ...data, updated_at: nowIso() };
+  await db.put("beans", updated);
+  if (currentUser.value) pushSingleBean(updated);
+  return updated;
+}
+
+export async function deleteBean(id: string): Promise<void> {
+  const db = await getDb();
+  await db.delete("beans", id);
+  if (currentUser.value) pushDeletedBean(id);
 }

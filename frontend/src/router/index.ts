@@ -39,6 +39,18 @@ const router = createRouter({
       component: () => import("../views/BrewLogFormView.vue"),
       props: true,
     },
+    { path: "/beans", name: "bean-list", component: () => import("../views/BeanListView.vue") },
+    {
+      path: "/beans/new",
+      name: "bean-new",
+      component: () => import("../views/BeanFormView.vue"),
+    },
+    {
+      path: "/beans/:id/edit",
+      name: "bean-edit",
+      component: () => import("../views/BeanFormView.vue"),
+      props: true,
+    },
     { path: "/login", name: "login", component: () => import("../views/LoginView.vue") },
     { path: "/register", name: "register", component: () => import("../views/RegisterView.vue") },
   ],
