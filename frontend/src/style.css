@@ -228,6 +228,17 @@ a {
   padding-bottom: 0.35rem;
 }
 
+@media (max-width: 600px) {
+  .step-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .step-row-header {
+    display: none;
+  }
+}
+
 .timer-display {
   font-size: 3rem;
   font-weight: 700;

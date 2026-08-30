@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { createRecipe, getRecipe, updateRecipe } from "../api/client";
+import { loadLastRecipeInput, saveLastRecipeInput } from "../storage/lastRecipeInput";
 
 const route = useRoute();
 const router = useRouter();
@@ -36,6 +37,18 @@ onMounted(async () => {
     form.grind_size = recipe.grind_size ?? "";
     form.total_time_sec = recipe.total_time_sec;
     form.notes = recipe.notes ?? "";
+  } else {
+    const lastInput = loadLastRecipeInput();
+    if (lastInput) {
+      form.name = lastInput.name;
+      form.bean_origin = lastInput.bean_origin;
+      form.dose_g = lastInput.dose_g;
+      form.water_ml = lastInput.water_ml;
+      form.water_temp_c = lastInput.water_temp_c;
+      form.grind_size = lastInput.grind_size;
+      form.total_time_sec = lastInput.total_time_sec;
+      form.notes = lastInput.notes;
+    }
   }
 });
 
@@ -57,6 +70,16 @@ async function onSubmit() {
       router.push(`/recipes/${recipeId.value}`);
     } else {
       const recipe = await createRecipe(payload);
+      saveLastRecipeInput({
+        name: form.name,
+        bean_origin: form.bean_origin,
+        dose_g: form.dose_g,
+        water_ml: form.water_ml,
+        water_temp_c: form.water_temp_c,
+        grind_size: form.grind_size,
+        total_time_sec: form.total_time_sec,
+        notes: form.notes,
+      });
       router.push(`/recipes/${recipe.id}`);
     }
   } finally {

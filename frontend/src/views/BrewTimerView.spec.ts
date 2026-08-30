@@ -130,7 +130,7 @@ describe("BrewTimerView.vue", () => {
     expect(rows[1].text()).not.toContain("✓");
   });
 
-  it("currentStepIndex is the last-passed step, and only that step gets `current` (never `done`) even once triggered", async () => {
+  it("currentStepIndex is the first untriggered step, and only that step gets `current` (never `done`)", async () => {
     const wrapper = await mountTimer();
     await findButton(wrapper, "開始").trigger("click");
     await vi.advanceTimersByTimeAsync(60_000); // elapsed = 60: s0 and s1 triggered
@@ -139,13 +139,13 @@ describe("BrewTimerView.vue", () => {
     const rows = wrapper.findAll(".step-row");
     expect(rows[0].classes()).toContain("done");
     expect(rows[0].classes()).not.toContain("current");
-    expect(rows[1].classes()).toContain("current");
-    expect(rows[1].classes()).not.toContain("done");
-    expect(rows[2].classes()).not.toContain("current");
+    expect(rows[1].classes()).toContain("done");
+    expect(rows[1].classes()).not.toContain("current");
+    expect(rows[2].classes()).toContain("current");
     expect(rows[2].classes()).not.toContain("done");
   });
 
-  it("currentStepIndex is -1 (no `current` row) before elapsed reaches the first step's target", async () => {
+  it("highlights the first (not-yet-triggered) step as `current` even before its target time is reached", async () => {
     const recipe = {
       ...recipeWithSteps,
       pour_steps: recipeWithSteps.pour_steps.map((s, i) =>
@@ -158,6 +158,19 @@ describe("BrewTimerView.vue", () => {
     await flushPromises();
 
     const rows = wrapper.findAll(".step-row");
+    expect(rows[0].classes()).toContain("current");
+    expect(rows[0].classes()).not.toContain("done");
+    expect(rows.filter((r) => r.classes().includes("current"))).toHaveLength(1);
+  });
+
+  it("current advances to -1 (no `current` row) once every step has been triggered", async () => {
+    const wrapper = await mountTimer();
+    await findButton(wrapper, "開始").trigger("click");
+    await vi.advanceTimersByTimeAsync(120_000); // elapsed = 120: every step triggered
+    await flushPromises();
+
+    const rows = wrapper.findAll(".step-row");
+    expect(rows.every((r) => r.classes().includes("done"))).toBe(true);
     expect(rows.some((r) => r.classes().includes("current"))).toBe(false);
   });
 
