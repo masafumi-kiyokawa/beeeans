@@ -6,7 +6,9 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 ## 1. カラーパレット
 
-すべて `frontend/src/style.css` の `:root` で定義する CSS カスタムプロパティ。ハードコードした16進数カラーをコンポーネント側に直接書かない。
+ハンドドリップコーヒーというプロダクトの世界観に合わせた、クリーム色の紙フィルター/焙煎豆を思わせる暖色系ニュートラルに、コーヒー豆のブラウンをブランドアクセントとして重ねた配色。すべて `frontend/src/style.css` の `:root` で定義する CSS カスタムプロパティとして管理し、ハードコードした16進数カラーをコンポーネント側に直接書かない(新しい色が必要になった場合の判断基準は8節を参照)。
+
+### ニュートラル(背景・罫線・文字)
 
 | 変数 | 値 | 用途 |
 |---|---|---|
@@ -15,11 +17,39 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `--color-border` | `#e2d9cc` | すべての罫線・区切り線(`.card`, `.table`, `.step-row`, フォーム入力欄の枠線)。星評価の非選択色にも流用。 |
 | `--color-text` | `#2b2420` | 本文の既定文字色。 |
 | `--color-text-muted` | `#7a6f63` | 補助テキスト(`.muted`, `.step-sub`, `.form-row label`, テーブル見出し `.table th`)。 |
+
+### ブランド(アクション・強調)
+
+| 変数 | 値 | 用途 |
+|---|---|---|
 | `--color-accent` | `#8a5a35` | プライマリアクション(`.btn` 背景、リンク色、`.btn-secondary` 文字色)。 |
 | `--color-accent-hover` | `#6f4527` | `--color-accent` のhover/active状態。ナビゲーションのアクティブリンク色にも使用。 |
-| `--color-danger` | `#b0403a` | 破壊的操作(`.btn-danger`)とエラーメッセージ(`.form-error`)。 |
-| `--color-highlight` | `#fff3d6` | タイマー実行中ステップのハイライト背景(`.step-row.current`)。 |
+| `--color-highlight` | `#fff6e0` | タイマー実行中ステップのハイライト背景(`.step-row.current`)。 |
 | `--color-rating-active` | `#e0a326` | 星評価の選択色(`.rating-stars .active`)。 |
+
+### セマンティック(状態)
+
+| 変数 | 値 | 用途 |
+|---|---|---|
+| `--color-danger` | `#b0403a` | 破壊的操作(`.btn-danger`)とエラーメッセージ(`.form-error`)。 |
+
+現状 `danger`(エラー/削除)のみで、成功・警告・情報を表す色は未定義。該当する状態が実装で必要になるまで追加しない(8節の「既存パターンで表現できない新しい概念の場合のみ追加」の原則)。
+
+### コントラスト検証
+
+実際にUIで重なる組み合わせをWCAG 2.1のコントラスト比で検証済み(通常テキストの基準はAA=4.5:1、大きいテキスト(18pt相当以上)はAA=3:1)。
+
+| 前景 / 背景 | 比率 | 判定 |
+|---|---|---|
+| `--color-text` / `--color-bg`, `--color-surface` | 14.28:1 / 15.26:1 | AA(通常)クリア |
+| `--color-text-muted` / `--color-bg`, `--color-surface` | 4.59:1 / 4.90:1 | AA(通常)クリア |
+| `--color-accent` / `--color-bg`, `--color-surface`(リンク色) | 5.47:1 / 5.84:1 | AA(通常)クリア |
+| 白文字 / `--color-accent`, `--color-accent-hover`(`.btn`) | 5.84:1 / 8.21:1 | AA(通常)クリア |
+| `--color-danger` / `--color-surface`, `--color-bg` | 5.77:1 / 5.40:1 | AA(通常)クリア |
+| 白文字 / `--color-danger`(`.btn-danger:hover`) | 5.77:1 | AA(通常)クリア |
+| `--color-text-muted` / `--color-highlight`(`.step-row.current` 内の `.muted`) | 4.56:1 | AA(通常)クリア。棚卸し時点の値(`#fff3d6`)は4.45:1でAA未達だったため `#fff6e0` に調整した経緯がある。 |
+
+新しい色やその組み合わせを追加する際は、同様にこの表へ検証結果を追記すること。
 
 ## 2. スペーシングスケール
 
