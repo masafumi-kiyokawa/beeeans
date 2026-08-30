@@ -78,11 +78,7 @@ const allTriggered = computed(() => {
 
 const currentStepIndex = computed(() => {
   if (!recipe.value) return -1;
-  let idx = -1;
-  recipe.value.pour_steps.forEach((step, i) => {
-    if (step.target_time_sec <= elapsed.value) idx = i;
-  });
-  return idx;
+  return recipe.value.pour_steps.findIndex((step) => !triggeredStepIds.value.has(step.id));
 });
 </script>
 
@@ -106,7 +102,7 @@ const currentStepIndex = computed(() => {
         class="step-row"
         :class="{
           current: index === currentStepIndex,
-          done: triggeredStepIds.has(step.id) && index !== currentStepIndex,
+          done: triggeredStepIds.has(step.id),
         }"
       >
         <span>{{ index + 1 }}</span>
