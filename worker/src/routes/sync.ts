@@ -20,6 +20,10 @@ const recipeSyncItemSchema = z.object({
   id: z.string(),
   name: z.string(),
   bean_origin: z.string().nullable().optional(),
+  // The linked bean's publicId, or null/absent when no bean is linked --
+  // resolved to bean.id (scoped by userId) in upsertRecipe, never trusted as
+  // an internal id directly, per .claude/skills/secure-resource-access/SKILL.md.
+  bean_id: z.string().nullable().optional(),
   dose_g: z.number().positive(),
   water_ml: z.number().positive(),
   water_temp_c: z.number().positive(),
@@ -86,6 +90,22 @@ type PourStepSyncItem = z.infer<typeof pourStepSyncItemSchema>;
 type BrewLogSyncItem = z.infer<typeof brewLogSyncItemSchema>;
 type BeanSyncItem = z.infer<typeof beanSyncItemSchema>;
 
+// Resolves a client-supplied bean publicId to its internal id, scoped to the
+// current user in the same query per .claude/skills/secure-resource-access/SKILL.md.
+// Silently drops an unresolvable reference (deleted/foreign bean) rather than
+// failing the whole recipe push, since bean_id is an optional link.
+async function resolveBeanId(
+  db: Database,
+  userId: string,
+  beanPublicId: string | null | undefined,
+): Promise<number | null> {
+  if (!beanPublicId) return null;
+  const bean = await db.query.bean.findFirst({
+    where: and(eq(schema.bean.publicId, beanPublicId), eq(schema.bean.userId, userId)),
+  });
+  return bean?.id ?? null;
+}
+
 async function upsertRecipe(db: Database, userId: string, item: RecipeSyncItem): Promise<boolean> {
   const existing = await db.query.recipe.findFirst({
     where: and(eq(schema.recipe.publicId, item.id), eq(schema.recipe.userId, userId)),
@@ -93,6 +113,7 @@ async function upsertRecipe(db: Database, userId: string, item: RecipeSyncItem):
   const data = {
     name: item.name,
     beanOrigin: item.bean_origin ?? null,
+    beanId: await resolveBeanId(db, userId, item.bean_id),
     doseG: item.dose_g,
     waterMl: item.water_ml,
     waterTempC: item.water_temp_c,
@@ -329,6 +350,7 @@ syncApp.get("/pull", async (c) => {
   });
   const recipes = await db.query.recipe.findMany({
     where: and(eq(schema.recipe.userId, userId), isNull(schema.recipe.deletedAt)),
+    with: { bean: true },
   });
   const pourSteps = await db
     .select({
@@ -372,6 +394,11 @@ syncApp.get("/pull", async (c) => {
       id: r.publicId,
       name: r.name,
       bean_origin: r.beanOrigin,
+      // Reported as null once the linked bean is soft-deleted, even though the
+      // FK column itself isn't cleared until a real delete -- the `beans` list
+      // above already excludes soft-deleted rows, so a client-visible bean_id
+      // must stay consistent with what's actually in that list.
+      bean_id: r.bean && !r.bean.deletedAt ? r.bean.publicId : null,
       dose_g: r.doseG,
       water_ml: r.waterMl,
       water_temp_c: r.waterTempC,

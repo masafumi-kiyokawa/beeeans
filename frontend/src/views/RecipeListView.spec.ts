@@ -2,7 +2,11 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { createMemoryHistory, createRouter } from "vue-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const clientMocks = vi.hoisted(() => ({ listRecipes: vi.fn(), deleteRecipe: vi.fn() }));
+const clientMocks = vi.hoisted(() => ({
+  listRecipes: vi.fn(),
+  listBeans: vi.fn(),
+  deleteRecipe: vi.fn(),
+}));
 vi.mock("../api/client", () => clientMocks);
 
 import RecipeListView from "./RecipeListView.vue";
@@ -55,6 +59,7 @@ describe("RecipeListView.vue", () => {
 
   beforeEach(() => {
     clientMocks.listRecipes.mockReset();
+    clientMocks.listBeans.mockReset().mockResolvedValue([]);
     clientMocks.deleteRecipe.mockReset();
     confirmSpy = vi.spyOn(window, "confirm");
   });
