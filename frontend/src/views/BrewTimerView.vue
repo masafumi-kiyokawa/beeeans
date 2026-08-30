@@ -89,7 +89,7 @@ const currentStepIndex = computed(() => {
 
     <div class="timer-display">{{ formatTime(elapsed) }}</div>
 
-    <div class="btn-row timer-controls">
+    <div class="btn-row btn-row-center">
       <button class="btn" v-if="!running" @click="start">開始</button>
       <button class="btn btn-secondary" v-else @click="pause">一時停止</button>
       <button class="btn btn-secondary" @click="reset">リセット</button>

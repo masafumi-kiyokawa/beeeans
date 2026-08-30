@@ -35,7 +35,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `1.5rem` | `.app-header`・`.timer-display` の縦マージン、`.section-title` の上マージン |
 | `3rem` | `.timer-display` のフォントサイズ(参考: フォントサイズにも同じスケール感覚を流用している) |
 
-かつては `style="margin-top: 0"` や `style="margin-top: 1rem"` のようなインラインstyleが複数箇所に散在していたが、繰り返しパターンをユーティリティクラス化して解消した:`.section-title:first-child`(コンテナ内の最初の見出しでは上マージンを打ち消す)、`.stack-top`(直前のブロックと区切るための `margin-top: var(--spacing)`)、`.timer-controls`(タイマー操作ボタン行専用の中央寄せ・下マージン)、`.form-row-narrow`(絞り込みセレクトなど横幅を絞る `.form-row`)。新しい余白調整が必要になった場合も、インラインstyleではなくこれらの再利用かユーティリティクラスの追加を優先すること(詳細は8節)。
+かつては `style="margin-top: 0"` や `style="margin-top: 1rem"` のようなインラインstyleが複数箇所に散在していたが、繰り返しパターンをユーティリティクラス化して解消した:`.section-title:first-child`(コンテナ内の最初の見出しでは上マージンを打ち消す)、`.stack-top`(直前のブロックと区切るための `margin-top: var(--spacing)`)、`.btn-row-center`(`.btn-row` と併用し、ボタンを中央寄せして下マージン `1.5rem` を付与する汎用修飾クラス)、`.form-row-narrow`(絞り込みセレクトなど横幅を絞る `.form-row`)。新しい余白調整が必要になった場合も、インラインstyleではなくこれらの再利用かユーティリティクラスの追加を優先すること(詳細は8節)。
 
 ## 3. タイポグラフィ
 
@@ -72,7 +72,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `.muted` | 補助的な説明文・メタ情報。 | 各所 |
 | `.step-sub` | `.step-row` 内の補足テキスト(1段小さいmutedテキスト)。 | `PourStepEditor.vue`, `BrewTimerView.vue` |
 | `.timer-display` | タイマーの大きな数字表示。中央寄せ・等幅数字。 | `BrewTimerView.vue` |
-| `.timer-controls` | `.btn-row` と併用する修飾クラス。ボタンを中央寄せし、下マージン `1.5rem` を付与する。 | `BrewTimerView.vue` |
+| `.btn-row-center` | `.btn-row` と併用する修飾クラス。ボタンを中央寄せし、下マージン `1.5rem` を付与する。 | `BrewTimerView.vue` |
 | `.stack-top` | 直前のブロックと区切るための `margin-top: var(--spacing)`。`.btn-row`/`.form-row` などに併用する。 | `BrewTimerView.vue`, `PourStepEditor.vue` |
 | `.form-row-narrow` | `.form-row` と併用する修飾クラス。`max-width: 320px` で横幅を絞る(絞り込み用セレクトなど)。 | `BrewLogListView.vue` |
 | `.app-shell` / `.app-header` / `.app-title` / `.app-nav` | アプリ全体のレイアウト骨格(`App.vue` 専用)。ページコンポーネント側では使わない。 | `App.vue` |
@@ -100,7 +100,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 ## 7. アクセシビリティ上の既知の課題
 
-- **星評価ピッカー(`BrewLogFormView.vue`)** には各ボタンに `aria-label="評価を5段階中N に設定"` と `aria-pressed` を付与済み。星評価の読み取り専用表示(`BrewLogCard.vue`)も `.rating-stars` に `aria-label="評価 N / 5"` を付与し、内側の `★` は `aria-hidden="true"` にして冗長な読み上げを避けている。
+- **星評価ピッカー(`BrewLogFormView.vue`)** には各ボタンに `aria-label="評価を5段階中Nに設定"` と `aria-pressed` を付与済み。星評価の読み取り専用表示(`BrewLogCard.vue`)は `<span>` の既定ロールが `generic`(nameless、`aria-label` を無視する)であるため、`.rating-stars` に `role="img"` を付与したうえで `aria-label="評価 5段階中N"` を設定している(内側の `★` は `aria-hidden="true"` で冗長な読み上げを避ける)。アイコンのみ・記号のみの要素に `aria-label` を追加する際は、対象要素が `aria-label` を許容するロールを持つか(素の `<span>`/`<div>` は不可)を確認すること。
 - **`PourStepEditor.vue` の並び替えボタン(↑/↓)** には `aria-label="1つ上に移動"` / `"1つ下に移動"` を付与済み。
 - **グループラベルが `for` を持たない箇所が2件**:`BrewLogFormView.vue` の「評価」ラベルと `PourStepEditor.vue` の「ステップを追加」ラベルは、単一の入力と1対1対応しないグループ見出しのため `for` なしの `<label>` になっている(構造上妥当)。それぞれ `id` を持たせ、対応するグループ要素に `role="group"` + `aria-labelledby` を付与して関連付け済み。それ以外のフォームラベルはすべて `for`/`id` で正しく関連付けられている。
 - **disabled状態の視覚表現がブラウザ既定任せ**(5節参照)。コントラストや判別しやすさの観点で明示的なスタイルがない。今後UIを変更する際、この節に該当する箇所に触るならついでに改善することを推奨する。
@@ -118,7 +118,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 6. **レスポンシブ**: 複数カラムのレイアウトを新規追加する場合、既存の`600px`ブレークポイントを使って1カラム化する。新しいブレークポイントは、既存の600pxで表現できないことを確認してからにする。
 7. **アクセシビリティ最低基準**(7節の課題を踏まえた、新規実装時の最低ライン):
    - 単一の入力に対応するラベルは必ず `for`/`id` で関連付ける。
-   - アイコンのみ・記号のみのインタラクティブ要素(星評価ボタンなど)には `aria-label` を付与する。
+   - アイコンのみ・記号のみのインタラクティブ要素(星評価ボタンなど)には `aria-label` を付与する。`<span>`/`<div>` など既定ロールが `generic` の要素に付与しても無視されるため、`role="img"`/`role="group"` 等 `aria-label` を許容するロールを併せて指定する。
    - 色だけで状態を伝える新規UIは避け、テキスト/アイコン/形状のいずれかを併用する。
 
 **逸脱が許される条件**: 既存のパターンでは表現できない新しい概念(例: これまでにない種類の状態やレイアウト)を追加する場合に限り、新しいクラス・カスタムプロパティの追加を認める。その場合も、追加した要素は必ずこのドキュメントの該当節に追記し、他の実装からも再利用できる形(汎用クラス名・命名規則の一貫性)にすること。単に「今回だけ楽だから」という理由でのインラインstyleや使い捨てクラスの追加は行わない。

@@ -261,7 +261,7 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
-.timer-controls {
+.btn-row-center {
   justify-content: center;
   margin-bottom: 1.5rem;
 }
