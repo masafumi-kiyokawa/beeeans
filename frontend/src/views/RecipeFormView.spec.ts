@@ -6,6 +6,7 @@ const clientMocks = vi.hoisted(() => ({
   createRecipe: vi.fn(),
   getRecipe: vi.fn(),
   updateRecipe: vi.fn(),
+  listBeans: vi.fn(),
 }));
 vi.mock("../api/client", () => clientMocks);
 
@@ -61,6 +62,7 @@ describe("RecipeFormView.vue", () => {
     clientMocks.createRecipe.mockReset();
     clientMocks.getRecipe.mockReset().mockResolvedValue(existingRecipe);
     clientMocks.updateRecipe.mockReset();
+    clientMocks.listBeans.mockReset().mockResolvedValue([]);
     localStorage.clear();
   });
 

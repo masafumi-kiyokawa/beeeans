@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { deleteRecipe, getRecipe, listBrewLogs } from "../api/client";
-import type { BrewLog, RecipeDetail } from "../types";
+import { deleteRecipe, getBean, getRecipe, listBrewLogs } from "../api/client";
+import type { Bean, BrewLog, RecipeDetail } from "../types";
 import PourStepEditor from "../components/PourStepEditor.vue";
 import BrewLogCard from "../components/BrewLogCard.vue";
 
@@ -11,12 +11,14 @@ const router = useRouter();
 
 const recipe = ref<RecipeDetail | null>(null);
 const logs = ref<BrewLog[]>([]);
+const bean = ref<Bean | null>(null);
 const loading = ref(true);
 
 async function load() {
   loading.value = true;
   recipe.value = await getRecipe(props.id);
   logs.value = await listBrewLogs(props.id);
+  bean.value = recipe.value.bean_id ? await getBean(recipe.value.bean_id).catch(() => null) : null;
   loading.value = false;
 }
 
@@ -52,6 +54,7 @@ async function onDelete() {
     </div>
 
     <div class="card">
+      <p v-if="bean" class="muted">使用した豆: {{ bean.name }}</p>
       <p v-if="recipe.bean_origin" class="muted">{{ recipe.bean_origin }}</p>
       <p>
         豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃

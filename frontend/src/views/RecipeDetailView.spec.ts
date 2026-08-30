@@ -6,6 +6,7 @@ const clientMocks = vi.hoisted(() => ({
   getRecipe: vi.fn(),
   listBrewLogs: vi.fn(),
   deleteRecipe: vi.fn(),
+  getBean: vi.fn(),
 }));
 vi.mock("../api/client", () => clientMocks);
 
@@ -70,6 +71,7 @@ describe("RecipeDetailView.vue", () => {
     clientMocks.getRecipe.mockReset().mockResolvedValue(recipe);
     clientMocks.listBrewLogs.mockReset().mockResolvedValue([log]);
     clientMocks.deleteRecipe.mockReset();
+    clientMocks.getBean.mockReset();
     confirmSpy = vi.spyOn(window, "confirm");
   });
 
