@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { createAuth } from "../auth";
 import * as schema from "../db/schema";
+import { isSafePurchaseUrl } from "../lib/url";
 
 type Database = ReturnType<typeof drizzle<typeof schema>>;
 
@@ -47,6 +48,28 @@ const brewLogSyncItemSchema = z.object({
   created_at: z.coerce.date(),
 });
 
+// purchase_url is validated against isSafePurchaseUrl (http/https only, no
+// credentials, no loopback/private/link-local host) as defense-in-depth --
+// see worker/src/lib/url.ts for the full rationale (this app never fetches
+// the URL server-side, so there is no live SSRF surface today).
+const beanSyncItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(200),
+  origin: z.string().max(200).nullable().optional(),
+  roaster: z.string().max(200).nullable().optional(),
+  roast_level: z.string().max(100).nullable().optional(),
+  roast_date: z.coerce.date().nullable().optional(),
+  purchase_url: z
+    .string()
+    .max(2048)
+    .refine(isSafePurchaseUrl, { message: "purchase_url must be a safe http(s) URL" })
+    .nullable()
+    .optional(),
+  notes: z.string().nullable().optional(),
+  created_at: z.coerce.date(),
+  updated_at: z.coerce.date(),
+});
+
 const syncPushRequestSchema = z.object({
   recipes: z.array(recipeSyncItemSchema).default([]),
   recipes_deleted: z.array(z.string()).default([]),
@@ -54,11 +77,14 @@ const syncPushRequestSchema = z.object({
   pour_steps_deleted: z.array(z.string()).default([]),
   brew_logs: z.array(brewLogSyncItemSchema).default([]),
   brew_logs_deleted: z.array(z.string()).default([]),
+  beans: z.array(beanSyncItemSchema).default([]),
+  beans_deleted: z.array(z.string()).default([]),
 });
 
 type RecipeSyncItem = z.infer<typeof recipeSyncItemSchema>;
 type PourStepSyncItem = z.infer<typeof pourStepSyncItemSchema>;
 type BrewLogSyncItem = z.infer<typeof brewLogSyncItemSchema>;
+type BeanSyncItem = z.infer<typeof beanSyncItemSchema>;
 
 async function upsertRecipe(db: Database, userId: string, item: RecipeSyncItem): Promise<boolean> {
   const existing = await db.query.recipe.findFirst({
@@ -144,6 +170,45 @@ async function upsertBrewLog(
   return false;
 }
 
+async function upsertBean(db: Database, userId: string, item: BeanSyncItem): Promise<boolean> {
+  const existing = await db.query.bean.findFirst({
+    where: and(eq(schema.bean.publicId, item.id), eq(schema.bean.userId, userId)),
+  });
+  const data = {
+    name: item.name,
+    origin: item.origin ?? null,
+    roaster: item.roaster ?? null,
+    roastLevel: item.roast_level ?? null,
+    roastDate: item.roast_date ?? null,
+    purchaseUrl: item.purchase_url ?? null,
+    notes: item.notes ?? null,
+    updatedAt: item.updated_at,
+  };
+  if (!existing) {
+    await db.insert(schema.bean).values({
+      publicId: item.id,
+      userId,
+      createdAt: item.created_at,
+      ...data,
+    });
+    return true;
+  }
+  await db.update(schema.bean).set(data).where(eq(schema.bean.id, existing.id));
+  return false;
+}
+
+async function softDeleteBean(db: Database, userId: string, publicId: string): Promise<boolean> {
+  const existing = await db.query.bean.findFirst({
+    where: and(eq(schema.bean.publicId, publicId), eq(schema.bean.userId, userId)),
+  });
+  if (!existing) return false;
+  await db
+    .update(schema.bean)
+    .set({ deletedAt: new Date() })
+    .where(eq(schema.bean.id, existing.id));
+  return true;
+}
+
 async function softDeleteRecipe(db: Database, userId: string, publicId: string): Promise<boolean> {
   const existing = await db.query.recipe.findFirst({
     where: and(eq(schema.recipe.publicId, publicId), eq(schema.recipe.userId, userId)),
@@ -210,6 +275,14 @@ syncApp.post("/push", async (c) => {
   const userId = c.get("userId");
   const db = drizzle(c.env.DB, { schema });
 
+  let beansUpserted = 0;
+  for (const item of payload.beans) {
+    if (await upsertBean(db, userId, item)) beansUpserted++;
+  }
+  let beansDeleted = 0;
+  for (const publicId of payload.beans_deleted) {
+    if (await softDeleteBean(db, userId, publicId)) beansDeleted++;
+  }
   let recipesUpserted = 0;
   for (const item of payload.recipes) {
     if (await upsertRecipe(db, userId, item)) recipesUpserted++;
@@ -242,6 +315,8 @@ syncApp.post("/push", async (c) => {
     pour_steps_deleted: pourStepsDeleted,
     brew_logs_upserted: brewLogsUpserted,
     brew_logs_deleted: brewLogsDeleted,
+    beans_upserted: beansUpserted,
+    beans_deleted: beansDeleted,
   });
 });
 
@@ -249,6 +324,9 @@ syncApp.get("/pull", async (c) => {
   const userId = c.get("userId");
   const db = drizzle(c.env.DB, { schema });
 
+  const beans = await db.query.bean.findMany({
+    where: and(eq(schema.bean.userId, userId), isNull(schema.bean.deletedAt)),
+  });
   const recipes = await db.query.recipe.findMany({
     where: and(eq(schema.recipe.userId, userId), isNull(schema.recipe.deletedAt)),
   });
@@ -305,5 +383,17 @@ syncApp.get("/pull", async (c) => {
     })),
     pour_steps: pourSteps,
     brew_logs: brewLogs,
+    beans: beans.map((b) => ({
+      id: b.publicId,
+      name: b.name,
+      origin: b.origin,
+      roaster: b.roaster,
+      roast_level: b.roastLevel,
+      roast_date: b.roastDate,
+      purchase_url: b.purchaseUrl,
+      notes: b.notes,
+      created_at: b.createdAt,
+      updated_at: b.updatedAt,
+    })),
   });
 });

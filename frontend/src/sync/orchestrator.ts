@@ -1,6 +1,6 @@
 import { getDb } from "../storage/db";
 import { pullSync, pushSync, type SyncPushPayload } from "../api/syncClient";
-import type { BrewLog, PourStep, Recipe } from "../types";
+import type { Bean, BrewLog, PourStep, Recipe } from "../types";
 
 const EMPTY: SyncPushPayload = {
   recipes: [],
@@ -9,6 +9,8 @@ const EMPTY: SyncPushPayload = {
   pour_steps_deleted: [],
   brew_logs: [],
   brew_logs_deleted: [],
+  beans: [],
+  beans_deleted: [],
 };
 
 function bestEffort(fn: () => Promise<unknown>): void {
@@ -17,22 +19,24 @@ function bestEffort(fn: () => Promise<unknown>): void {
 
 async function pushLocalDataset(): Promise<void> {
   const db = await getDb();
-  const [recipes, pour_steps, brew_logs] = await Promise.all([
+  const [recipes, pour_steps, brew_logs, beans] = await Promise.all([
     db.getAll("recipes"),
     db.getAll("pourSteps"),
     db.getAll("brewLogs"),
+    db.getAll("beans"),
   ]);
-  await pushSync({ ...EMPTY, recipes, pour_steps, brew_logs });
+  await pushSync({ ...EMPTY, recipes, pour_steps, brew_logs, beans });
 }
 
 async function pullServerDataset(): Promise<void> {
   const result = await pullSync();
   const db = await getDb();
-  const tx = db.transaction(["recipes", "pourSteps", "brewLogs"], "readwrite");
+  const tx = db.transaction(["recipes", "pourSteps", "brewLogs", "beans"], "readwrite");
   await Promise.all([
     ...result.recipes.map((r) => tx.objectStore("recipes").put(r)),
     ...result.pour_steps.map((s) => tx.objectStore("pourSteps").put(s)),
     ...result.brew_logs.map((l) => tx.objectStore("brewLogs").put(l)),
+    ...result.beans.map((b) => tx.objectStore("beans").put(b)),
   ]);
   await tx.done;
 }
@@ -78,4 +82,12 @@ export function pushSingleBrewLog(log: BrewLog): void {
 
 export function pushDeletedBrewLog(id: string): void {
   bestEffort(() => pushSync({ ...EMPTY, brew_logs_deleted: [id] }));
+}
+
+export function pushSingleBean(bean: Bean): void {
+  bestEffort(() => pushSync({ ...EMPTY, beans: [bean] }));
+}
+
+export function pushDeletedBean(id: string): void {
+  bestEffort(() => pushSync({ ...EMPTY, beans_deleted: [id] }));
 }

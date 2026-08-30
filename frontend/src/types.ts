@@ -70,6 +70,29 @@ export interface BrewLogInput {
   notes?: string | null;
 }
 
+export interface Bean {
+  id: string;
+  name: string;
+  origin: string | null;
+  roaster: string | null;
+  roast_level: string | null;
+  roast_date: string | null;
+  purchase_url: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BeanInput {
+  name: string;
+  origin?: string | null;
+  roaster?: string | null;
+  roast_level?: string | null;
+  roast_date?: string | null;
+  purchase_url?: string | null;
+  notes?: string | null;
+}
+
 export interface UserOut {
   id: string;
   email: string;

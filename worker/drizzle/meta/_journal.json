@@ -15,6 +15,13 @@
       "when": 1787924710787,
       "tag": "0001_demonic_the_enforcers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788087170941,
+      "tag": "0002_yellow_rachel_grey",
+      "breakpoints": true
     }
   ]
 }

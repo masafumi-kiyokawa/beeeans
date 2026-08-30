@@ -1,4 +1,4 @@
-import type { BrewLog, PourStep, Recipe } from "../types";
+import type { Bean, BrewLog, PourStep, Recipe } from "../types";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
@@ -25,6 +25,8 @@ export interface SyncPushPayload {
   pour_steps_deleted: string[];
   brew_logs: BrewLog[];
   brew_logs_deleted: string[];
+  beans: Bean[];
+  beans_deleted: string[];
 }
 
 export interface SyncPushResult {
@@ -34,12 +36,15 @@ export interface SyncPushResult {
   pour_steps_deleted: number;
   brew_logs_upserted: number;
   brew_logs_deleted: number;
+  beans_upserted: number;
+  beans_deleted: number;
 }
 
 export interface SyncPullResult {
   recipes: Recipe[];
   pour_steps: PourStep[];
   brew_logs: BrewLog[];
+  beans: Bean[];
 }
 
 export const pushSync = (payload: SyncPushPayload) =>

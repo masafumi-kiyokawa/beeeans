@@ -161,6 +161,33 @@ export const brewLog = sqliteTable(
   ],
 );
 
+export const bean = sqliteTable(
+  "bean",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    publicId: text("public_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    origin: text("origin"),
+    roaster: text("roaster"),
+    roastLevel: text("roast_level"),
+    roastDate: integer("roast_date", { mode: "timestamp_ms" }),
+    // Opaque stored data, never fetched server-side -- see worker/src/lib/url.ts's
+    // isSafePurchaseUrl, which every push validates this against before it lands here.
+    purchaseUrl: text("purchase_url"),
+    notes: text("notes"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+    deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    uniqueIndex("bean_public_id_idx").on(table.publicId),
+    index("bean_userId_idx").on(table.userId),
+  ],
+);
+
 export const recipeRelations = relations(recipe, ({ many }) => ({
   pourSteps: many(pourStep),
   brewLogs: many(brewLog),

@@ -19,6 +19,7 @@ async function onLogout() {
       <h1 class="app-title">beans</h1>
       <nav class="app-nav">
         <RouterLink to="/">レシピ</RouterLink>
+        <RouterLink to="/beans">豆</RouterLink>
         <RouterLink to="/logs">抽出ログ</RouterLink>
         <template v-if="currentUser">
           <span class="muted">{{ currentUser.email }}</span>
