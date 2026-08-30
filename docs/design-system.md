@@ -93,7 +93,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `.form-row` | フォーム1項目分(label + input を縦積み)。 | 全フォーム画面 |
 | `.form-grid` | `.form-row` を `minmax(200px, 1fr)` のレスポンシブグリッドで並べる(レシピ作成フォームの複数フィールドなど)。 | `RecipeFormView.vue` |
 | `.table` | 一覧テーブルの基本スタイル(border-collapse、セルpadding、下線区切り)。 | 一覧系ビュー |
-| `.step-row` | 注湯ステップ1行分。5カラムグリッド、600px以下で1カラムに切り替え(6節参照)。 | `PourStepEditor.vue`, `BrewTimerView.vue` |
+| `.step-row` | 注湯ステップ1行分。5カラムグリッド、600px以下は `grid-template-areas` で「#/時間/湯量」「メモ」「操作」の3行に組み替え(6節参照)。内側の `<input>` は `width: 100%; min-width: 0;` 必須(6節参照)。 | `PourStepEditor.vue`, `BrewTimerView.vue` |
 | `.step-row-header` | `.step-row` の見出し行。モバイル幅では非表示。 | `PourStepEditor.vue` |
 | `.rating-stars` | 星評価。`span`(読み取り専用表示、`BrewLogCard.vue`)と `button`(操作可能なピッカー、`BrewLogFormView.vue`)の両方に対応する必要がある——どちらか一方しか想定しないスタイル追加は禁止。 | `BrewLogCard.vue`, `BrewLogFormView.vue` |
 | `.section-title` | セクション見出し行(タイトル + 右寄せのアクションボタンなど)。`flex`, `justify-content: space-between`。コンテナ内の最初の子要素(`:first-child`)の場合は上マージンが自動的に0になる。 | `RecipeDetailView.vue`, `BrewLogCard.vue`, `RecipeListView.vue` |
@@ -124,9 +124,10 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 ## 6. レスポンシブパターン
 
 - ブレークポイントは `600px` の1本のみ(`@media (max-width: 600px)`)。複数ブレークポイントを持つ設計にはなっていない。
-- 現状唯一の実装対象は `.step-row`:600px以下で5カラムグリッドを1カラムに変更し、`.step-row-header` を非表示にする(モバイルでは各項目をラベルなしの縦積みで見せる設計)。
+- 現状唯一の実装対象は `.step-row`:600px以下で5カラムグリッドを `grid-template-areas` による3行組み替え(#/時間/湯量 → メモ → 操作)に変更し、`.step-row-header` を非表示にする。
 - `.app-shell` は `max-width: 960px; margin: 0 auto` で中央寄せするのみで、それ自体はブレークポイントを持たない。
 - 新しいレイアウトを追加する際、複数カラムのグリッド/テーブル的な表現になるなら、この `600px` を流用してモバイル1カラム化を検討する。新しいブレークポイント値を増やす前に、既存の600pxで足りないか確認すること。
+- **グリッド/フレックスコンテナ内の `<input>`/`<select>`/`<textarea>` には必ず `width: 100%; min-width: 0;` を指定する。** `<input>` のようなフォームコントロールはグリッド/フレックスアイテムの既定ストレッチの対象にならず、ブラウザ既定の実測幅(170〜200px程度)を保持する。列幅がその既定幅より狭いレイアウト(例: モバイル幅の `.step-row`)ではみ出し・表示崩れの原因になる。`.step-row` のカラム数・カラム幅を変更するPRでは、このスタイルが失われていないか必ず確認すること(#63で発生した再発の直接原因)。
 
 ## 7. アクセシビリティ上の既知の課題
 

@@ -159,6 +159,11 @@ a {
   color: var(--color-text);
 }
 
+.step-row input {
+  width: 100%;
+  min-width: 0;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
