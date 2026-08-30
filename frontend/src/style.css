@@ -65,6 +65,17 @@ a {
   text-decoration: underline;
 }
 
+.app-nav-toggle {
+  display: none;
+  padding: 0.625rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -187,6 +198,8 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
   margin: 1.5rem 0 0.75rem;
 }
 
@@ -243,9 +256,53 @@ a {
 }
 
 @media (max-width: 600px) {
+  .app-header {
+    flex-wrap: wrap;
+  }
+
+  .app-nav-toggle {
+    display: inline-block;
+  }
+
+  .app-nav {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    padding-top: 1rem;
+  }
+
+  .app-nav.open {
+    display: flex;
+  }
+
   .step-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 2rem 1fr 1fr;
+    grid-template-areas:
+      "num time water"
+      "notes notes notes"
+      "actions actions actions";
     gap: 0.25rem;
+  }
+
+  .step-row-num {
+    grid-area: num;
+  }
+
+  .step-row-time {
+    grid-area: time;
+  }
+
+  .step-row-water {
+    grid-area: water;
+  }
+
+  .step-row-notes {
+    grid-area: notes;
+  }
+
+  .step-row-actions {
+    grid-area: actions;
   }
 
   .step-row-header {
@@ -282,6 +339,7 @@ a {
 
 .rating-stars button {
   cursor: pointer;
+  padding: 0.25rem;
 }
 
 .rating-stars span.active,

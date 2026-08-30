@@ -105,11 +105,11 @@ const currentStepIndex = computed(() => {
           done: triggeredStepIds.has(step.id),
         }"
       >
-        <span>{{ index + 1 }}</span>
-        <span>{{ formatTime(step.target_time_sec) }}</span>
-        <span>{{ step.cumulative_water_ml }}ml</span>
-        <span class="muted">{{ step.notes }}</span>
-        <span>{{ triggeredStepIds.has(step.id) ? "✓" : "" }}</span>
+        <span class="step-row-num">{{ index + 1 }}</span>
+        <span class="step-row-time">{{ formatTime(step.target_time_sec) }}</span>
+        <span class="step-row-water">{{ step.cumulative_water_ml }}ml</span>
+        <span class="step-row-notes muted">{{ step.notes }}</span>
+        <span class="step-row-actions">{{ triggeredStepIds.has(step.id) ? "✓" : "" }}</span>
       </div>
     </div>
 
