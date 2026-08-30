@@ -59,7 +59,6 @@ describe("api/client", () => {
       await db.add("recipes", {
         id: "older",
         name: "Older",
-        bean_origin: null,
         bean_id: null,
         dose_g: 20,
         water_ml: 300,
@@ -73,7 +72,6 @@ describe("api/client", () => {
       await db.add("recipes", {
         id: "newer",
         name: "Newer",
-        bean_origin: null,
         bean_id: null,
         dose_g: 20,
         water_ml: 300,
@@ -118,7 +116,6 @@ describe("api/client", () => {
       expect(recipe.id).toBeTruthy();
       expect(recipe.created_at).toBeTruthy();
       expect(recipe.updated_at).toBe(recipe.created_at);
-      expect(recipe.bean_origin).toBeNull();
       expect(recipe.grind_size).toBeNull();
       expect(recipe.total_time_sec).toBeNull();
       expect(recipe.notes).toBeNull();

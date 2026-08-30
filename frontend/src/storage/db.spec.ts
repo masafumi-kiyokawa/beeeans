@@ -49,7 +49,6 @@ describe("storage/db", () => {
     await db.add("recipes", {
       id: "r1",
       name: "Linked",
-      bean_origin: null,
       bean_id: "b1",
       dose_g: 20,
       water_ml: 300,
@@ -63,7 +62,6 @@ describe("storage/db", () => {
     await db.add("recipes", {
       id: "r2",
       name: "Unlinked",
-      bean_origin: null,
       bean_id: null,
       dose_g: 20,
       water_ml: 300,
@@ -83,7 +81,6 @@ describe("storage/db", () => {
     const recipe: Recipe = {
       id: "r1",
       name: "Test",
-      bean_origin: null,
       bean_id: null,
       dose_g: 20,
       water_ml: 300,

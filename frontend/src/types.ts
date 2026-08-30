@@ -24,7 +24,6 @@ export interface PourStepUpdate {
 export interface Recipe {
   id: string;
   name: string;
-  bean_origin: string | null;
   bean_id: string | null;
   dose_g: number;
   water_ml: number;
@@ -42,7 +41,6 @@ export interface RecipeDetail extends Recipe {
 
 export interface RecipeInput {
   name: string;
-  bean_origin?: string | null;
   bean_id?: string | null;
   dose_g: number;
   water_ml: number;

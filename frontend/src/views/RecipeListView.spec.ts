@@ -14,7 +14,7 @@ import RecipeListView from "./RecipeListView.vue";
 const recipeA = {
   id: "r1",
   name: "Recipe A",
-  bean_origin: "Ethiopia",
+  bean_id: "b1",
   dose_g: 20,
   water_ml: 300,
   water_temp_c: 92,
@@ -29,9 +29,11 @@ const recipeB = {
   ...recipeA,
   id: "r2",
   name: "Recipe B",
-  bean_origin: null,
+  bean_id: null,
   grind_size: null,
 };
+
+const beanA = { id: "b1", name: "Ethiopia" };
 
 function makeRouter() {
   return createRouter({
@@ -70,8 +72,9 @@ describe("RecipeListView.vue", () => {
     expect(wrapper.text()).toContain("まだレシピがありません");
   });
 
-  it("renders a card per recipe, showing bean_origin/grind_size only when present", async () => {
+  it("renders a card per recipe, showing linked bean name/grind_size only when present", async () => {
     clientMocks.listRecipes.mockResolvedValue([recipeA, recipeB]);
+    clientMocks.listBeans.mockReset().mockResolvedValue([beanA]);
     const wrapper = await mountView();
     const cards = wrapper.findAll(".card");
     expect(cards).toHaveLength(2);

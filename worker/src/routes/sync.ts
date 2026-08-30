@@ -19,7 +19,6 @@ type Database = ReturnType<typeof drizzle<typeof schema>>;
 const recipeSyncItemSchema = z.object({
   id: z.string(),
   name: z.string(),
-  bean_origin: z.string().nullable().optional(),
   // The linked bean's publicId, or null/absent when no bean is linked --
   // resolved to bean.id (scoped by userId) in upsertRecipe, never trusted as
   // an internal id directly, per .claude/skills/secure-resource-access/SKILL.md.
@@ -112,7 +111,6 @@ async function upsertRecipe(db: Database, userId: string, item: RecipeSyncItem):
   });
   const data = {
     name: item.name,
-    beanOrigin: item.bean_origin ?? null,
     beanId: await resolveBeanId(db, userId, item.bean_id),
     doseG: item.dose_g,
     waterMl: item.water_ml,
@@ -393,7 +391,6 @@ syncApp.get("/pull", async (c) => {
     recipes: recipes.map((r) => ({
       id: r.publicId,
       name: r.name,
-      bean_origin: r.beanOrigin,
       // Reported as null once the linked bean is soft-deleted, even though the
       // FK column itself isn't cleared until a real delete -- the `beans` list
       // above already excludes soft-deleted rows, so a client-visible bean_id
