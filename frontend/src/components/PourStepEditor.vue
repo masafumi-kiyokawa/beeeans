@@ -203,11 +203,17 @@ async function moveStep(index: number, direction: -1 | 1) {
           </span>
           <span class="muted">{{ step.notes }}</span>
           <div class="btn-row">
-            <button class="btn btn-secondary" :disabled="index === 0" @click="moveStep(index, -1)">
+            <button
+              class="btn btn-secondary"
+              aria-label="1つ上に移動"
+              :disabled="index === 0"
+              @click="moveStep(index, -1)"
+            >
               ↑
             </button>
             <button
               class="btn btn-secondary"
+              aria-label="1つ下に移動"
               :disabled="index === steps.length - 1"
               @click="moveStep(index, 1)"
             >
@@ -220,9 +226,9 @@ async function moveStep(index: number, direction: -1 | 1) {
       </div>
     </template>
 
-    <div class="form-row" style="margin-top: 1rem">
-      <label>ステップを追加</label>
-      <div class="step-row">
+    <div class="form-row stack-top">
+      <label id="add-step-label">ステップを追加</label>
+      <div class="step-row" role="group" aria-labelledby="add-step-label">
         <span>-</span>
         <div>
           <input v-model.number="newStep.time_delta_sec" type="number" min="0" placeholder="秒" />

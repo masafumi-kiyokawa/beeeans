@@ -81,13 +81,15 @@ async function onSubmit() {
         <input id="brewed-at" v-model="form.brewed_at" type="datetime-local" required />
       </div>
       <div class="form-row">
-        <label>評価</label>
-        <span class="rating-stars">
+        <label id="rating-label">評価</label>
+        <span class="rating-stars" role="group" aria-labelledby="rating-label">
           <button
             v-for="n in 5"
             :key="n"
             type="button"
             :class="{ active: n <= form.rating }"
+            :aria-label="`評価を5段階中${n}に設定`"
+            :aria-pressed="n === form.rating"
             @click="form.rating = n"
           >
             ★

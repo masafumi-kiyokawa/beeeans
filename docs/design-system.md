@@ -18,13 +18,8 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `--color-accent` | `#8a5a35` | プライマリアクション(`.btn` 背景、リンク色、`.btn-secondary` 文字色)。 |
 | `--color-accent-hover` | `#6f4527` | `--color-accent` のhover/active状態。ナビゲーションのアクティブリンク色にも使用。 |
 | `--color-danger` | `#b0403a` | 破壊的操作(`.btn-danger`)とエラーメッセージ(`.form-error`)。 |
-
-このほかコンポーネント内でハードコードされている色が2つある(棚卸し時点の既知の逸脱として記録。新規追加時はこれを増やさない):
-
-- `#fff3d6` — `.step-row.current`(タイマー実行中ステップのハイライト背景)
-- `#e0a326` — `.rating-stars .active`(星評価の選択色)
-
-これらは将来的に `--color-highlight` / `--color-rating-active` のようなカスタムプロパティ化を検討してよいが、本ドキュメント作成時点では既存の踏襲対象として明記するに留める。
+| `--color-highlight` | `#fff3d6` | タイマー実行中ステップのハイライト背景(`.step-row.current`)。 |
+| `--color-rating-active` | `#e0a326` | 星評価の選択色(`.rating-stars .active`)。 |
 
 ## 2. スペーシングスケール
 
@@ -40,7 +35,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `1.5rem` | `.app-header`・`.timer-display` の縦マージン、`.section-title` の上マージン |
 | `3rem` | `.timer-display` のフォントサイズ(参考: フォントサイズにも同じスケール感覚を流用している) |
 
-インラインの `style="margin-top: 0"` や `style="margin-top: 1rem"` のようなその場限りの調整が既存コード(`RecipeDetailView.vue`, `BrewLogCard.vue`, `RecipeListView.vue`, `PourStepEditor.vue`, `BrewTimerView.vue`, `BrewLogListView.vue`)に散在している。これは意図的なユーティリティ不足を示す既知の逸脱であり、新規追加分でこれ以上増やさないこと(詳細は8節)。
+かつては `style="margin-top: 0"` や `style="margin-top: 1rem"` のようなインラインstyleが複数箇所に散在していたが、繰り返しパターンをユーティリティクラス化して解消した:`.section-title:first-child`(コンテナ内の最初の見出しでは上マージンを打ち消す)、`.stack-top`(直前のブロックと区切るための `margin-top: var(--spacing)`)、`.timer-controls`(タイマー操作ボタン行専用の中央寄せ・下マージン)、`.form-row-narrow`(絞り込みセレクトなど横幅を絞る `.form-row`)。新しい余白調整が必要になった場合も、インラインstyleではなくこれらの再利用かユーティリティクラスの追加を優先すること(詳細は8節)。
 
 ## 3. タイポグラフィ
 
@@ -71,12 +66,15 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `.step-row` | 注湯ステップ1行分。5カラムグリッド、600px以下で1カラムに切り替え(6節参照)。 | `PourStepEditor.vue`, `BrewTimerView.vue` |
 | `.step-row-header` | `.step-row` の見出し行。モバイル幅では非表示。 | `PourStepEditor.vue` |
 | `.rating-stars` | 星評価。`span`(読み取り専用表示、`BrewLogCard.vue`)と `button`(操作可能なピッカー、`BrewLogFormView.vue`)の両方に対応する必要がある——どちらか一方しか想定しないスタイル追加は禁止。 | `BrewLogCard.vue`, `BrewLogFormView.vue` |
-| `.section-title` | セクション見出し行(タイトル + 右寄せのアクションボタンなど)。`flex`, `justify-content: space-between`。 | `RecipeDetailView.vue`, `BrewLogCard.vue`, `RecipeListView.vue` |
+| `.section-title` | セクション見出し行(タイトル + 右寄せのアクションボタンなど)。`flex`, `justify-content: space-between`。コンテナ内の最初の子要素(`:first-child`)の場合は上マージンが自動的に0になる。 | `RecipeDetailView.vue`, `BrewLogCard.vue`, `RecipeListView.vue` |
 | `.empty-state` | 一覧が0件のときのプレースホルダーテキスト。 | 各一覧ビュー |
 | `.form-error` | フォーム送信エラーメッセージ(`--color-danger`)。 | 全フォーム画面 |
 | `.muted` | 補助的な説明文・メタ情報。 | 各所 |
 | `.step-sub` | `.step-row` 内の補足テキスト(1段小さいmutedテキスト)。 | `PourStepEditor.vue`, `BrewTimerView.vue` |
 | `.timer-display` | タイマーの大きな数字表示。中央寄せ・等幅数字。 | `BrewTimerView.vue` |
+| `.timer-controls` | `.btn-row` と併用する修飾クラス。ボタンを中央寄せし、下マージン `1.5rem` を付与する。 | `BrewTimerView.vue` |
+| `.stack-top` | 直前のブロックと区切るための `margin-top: var(--spacing)`。`.btn-row`/`.form-row` などに併用する。 | `BrewTimerView.vue`, `PourStepEditor.vue` |
+| `.form-row-narrow` | `.form-row` と併用する修飾クラス。`max-width: 320px` で横幅を絞る(絞り込み用セレクトなど)。 | `BrewLogListView.vue` |
 | `.app-shell` / `.app-header` / `.app-title` / `.app-nav` | アプリ全体のレイアウト骨格(`App.vue` 専用)。ページコンポーネント側では使わない。 | `App.vue` |
 
 ## 5. コンポーネントの状態表現
@@ -102,14 +100,11 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 ## 7. アクセシビリティ上の既知の課題
 
-棚卸し時点でのコードベース調査結果(`aria-*` 属性・`role` 属性はリポジトリ全体で0件)。
-
-- **`aria-*`/`role` 属性が一切ない**。星評価ピッカー(`BrewLogFormView.vue`)はボタンの視覚的な★のみで、スクリーンリーダー向けのラベル(`aria-label="5段階中3"` 等)がない。
-- **グループラベルが `for` を持たない箇所が2件**:`BrewLogFormView.vue` の「評価」ラベルと `PourStepEditor.vue` の「ステップを追加」ラベルは、単一の入力と1対1対応しないグループ見出しのため `for` なしの `<label>` になっている(構造上妥当な逸脱だが、`role="group"` + `aria-labelledby` 等で明示する余地はある)。それ以外のフォームラベルはすべて `for`/`id` で正しく関連付けられている。
-- **disabled状態の視覚表現がブラウザ既定任せ**(5節参照)。コントラストや判別しやすさの観点で明示的なスタイルがない。
-- **色のみに依存する状態表現**:`.step-row.current`(背景色のみ)、`.rating-stars .active`(色のみ)は、色覚特性によっては判別しづらい可能性がある。
-
-このドキュメント作成時点でこれらをコード修正することはスコープ外とする。今後UIを変更する際、この節に該当する箇所に触るならついでに改善することを推奨する(最低基準として8節に反映)。
+- **星評価ピッカー(`BrewLogFormView.vue`)** には各ボタンに `aria-label="評価を5段階中N に設定"` と `aria-pressed` を付与済み。星評価の読み取り専用表示(`BrewLogCard.vue`)も `.rating-stars` に `aria-label="評価 N / 5"` を付与し、内側の `★` は `aria-hidden="true"` にして冗長な読み上げを避けている。
+- **`PourStepEditor.vue` の並び替えボタン(↑/↓)** には `aria-label="1つ上に移動"` / `"1つ下に移動"` を付与済み。
+- **グループラベルが `for` を持たない箇所が2件**:`BrewLogFormView.vue` の「評価」ラベルと `PourStepEditor.vue` の「ステップを追加」ラベルは、単一の入力と1対1対応しないグループ見出しのため `for` なしの `<label>` になっている(構造上妥当)。それぞれ `id` を持たせ、対応するグループ要素に `role="group"` + `aria-labelledby` を付与して関連付け済み。それ以外のフォームラベルはすべて `for`/`id` で正しく関連付けられている。
+- **disabled状態の視覚表現がブラウザ既定任せ**(5節参照)。コントラストや判別しやすさの観点で明示的なスタイルがない。今後UIを変更する際、この節に該当する箇所に触るならついでに改善することを推奨する。
+- **色のみに依存する状態表現**:`.step-row.current`(背景色のみ)、`.rating-stars .active`(色のみ。ただし読み取り専用表示・ピッカーともに `aria-label` でテキスト情報を併用している)は、色覚特性によっては視覚的に判別しづらい可能性がある。これらは意図的に現状維持している既知の制約。
 
 ## 8. 新規UIパターン追加時のガイドライン
 

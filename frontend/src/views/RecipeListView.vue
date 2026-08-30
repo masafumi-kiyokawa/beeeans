@@ -39,7 +39,7 @@ onMounted(load);
 
     <div v-else class="card-list">
       <div v-for="recipe in recipes" :key="recipe.id" class="card">
-        <div class="section-title" style="margin-top: 0">
+        <div class="section-title">
           <RouterLink :to="`/recipes/${recipe.id}`"
             ><strong>{{ recipe.name }}</strong></RouterLink
           >
