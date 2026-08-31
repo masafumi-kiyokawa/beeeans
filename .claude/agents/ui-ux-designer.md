@@ -32,7 +32,7 @@ model: sonnet
 
 diff・PR・特定コンポーネントを読み、以下の観点でレビューする(コードは直さず、指摘のみ):
 
-- **一貫性**: 既存のユーティリティクラス(`.card` `.btn` `.form-row` `.table` `.step-row` `.rating-stars` 等)を再利用せず独自CSSを追加していないか。`.rating-stars` は読み取り専用表示(`span`、`BrewLogCard.vue`)と操作可能なピッカー(`button`、`BrewLogFormView.vue`)の両方に対応する必要がある、といった既存の制約を踏まえる。
+- **一貫性**: 既存のユーティリティクラス(`.card` `.btn` `.form-row` `.table` `.step-row` `.rating-stars` 等)を再利用せず独自CSSを追加していないか。`.rating-stars` は読み取り専用表示(`span`、`BrewLogCard.vue`)と操作可能なピッカー(`button`、`BrewLogFormView.vue`)の両方に対応する必要がある、といった既存の制約を踏まえる。新規インタラクティブ要素のクラスが `color`/`background`/`border` のいずれかを定義し忘れ、ブラウザ既定色に委ねてしまっていないか(`.app-nav-toggle` が `color` 未定義のまま実装され、パレット外の色に見えた実例あり——`docs/design-system.md` 7節参照)も確認する。
 - **レスポンシブ**: モバイル幅での挙動(例: 注湯ステップ行をスマホ幅で1列レイアウトに切り替えた過去の修正のような、幅に応じたレイアウト崩れ)。
 - **アクセシビリティ**: コントラスト比、タップ領域の大きさ、キーボード操作、`aria-*` 属性、フォームのラベル関連付けなど。フォーカスインジケータは `a`/`button`/`input`/`select`/`textarea` への共通 `:focus-visible` スタイル(`--color-accent` によるoutline、`style.css`)で担保済み——これら以外のタグで独自のインタラクティブ要素を作る場合のみ、同様のスタイルが定義されているか確認する。
 - **フィードバック/状態表現**: ローディング・エラー・空状態・タイマーのハイライト(`BrewTimerView.vue` の「次に注湯すべきステップをハイライトする」のような挙動)が UX として分かりやすいか。
