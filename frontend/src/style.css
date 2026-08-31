@@ -75,15 +75,11 @@ textarea:focus-visible {
   text-decoration: underline;
 }
 
-.app-nav-toggle {
+button.app-nav-toggle {
   display: none;
   padding: 0.625rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: var(--color-surface);
   font-size: 1.1rem;
   line-height: 1;
-  cursor: pointer;
 }
 
 .card {
@@ -275,7 +271,7 @@ textarea:focus-visible {
     flex-wrap: wrap;
   }
 
-  .app-nav-toggle {
+  button.app-nav-toggle {
     display: inline-block;
   }
 

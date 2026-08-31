@@ -20,7 +20,7 @@ async function onLogout() {
     <header class="app-header">
       <h1 class="app-title">beans</h1>
       <button
-        class="app-nav-toggle"
+        class="app-nav-toggle btn btn-secondary"
         type="button"
         :aria-expanded="navOpen"
         aria-controls="app-nav"
