@@ -72,7 +72,7 @@ Routing (`frontend/src/router/index.ts`) is view-per-route under `frontend/src/v
 
 `BrewTimerView.vue` is a client-only countup timer: a `setInterval` ticks `elapsed`, compares it against each step's `target_time_sec`, and fires a Web Audio oscillator beep (no audio asset file) the first time each step's threshold is crossed, tracked via a `Set` of triggered step IDs.
 
-Styling is a single hand-written `frontend/src/style.css` (CSS custom properties + a handful of utility classes: `.card`, `.btn`, `.form-row`, `.table`, `.step-row`, `.rating-stars`) — no UI framework. Note `.rating-stars` styles must target both `span` (read-only display in `BrewLogCard.vue`) and `button` (interactive picker in `BrewLogFormView.vue`).
+Styling is a single hand-written `frontend/src/style.css` (CSS custom properties + a handful of utility classes: `.card`, `.btn`, `.form-row`, `.table`, `.step-row`, `.rating-stars`) — no UI framework. Note `.rating-stars` styles must target both `span` (read-only display in `BrewLogCard.vue`) and `button` (interactive picker in `BrewLogFormView.vue`). Whether a repeated UI pattern belongs in `style.css` as a utility class (styling-only reuse) or as a shared Vue component under `frontend/src/components/` (structural/markup reuse) is decided by the rubric in `docs/design-system.md` (section 9) and the `design-system` skill — check there before adding a new pattern.
 
 ## Known limitations (sync)
 
