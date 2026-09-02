@@ -68,8 +68,10 @@ textarea:focus-visible {
 .app-nav a {
   text-decoration: none;
   font-weight: 600;
+  padding: 0.5rem 0;
 }
 
+.app-nav a.active,
 .app-nav a.router-link-exact-active {
   color: var(--color-accent-hover);
   text-decoration: underline;
@@ -77,6 +79,8 @@ textarea:focus-visible {
 
 button.app-nav-toggle {
   display: none;
+  min-width: 44px;
+  min-height: 44px;
   padding: 0.625rem;
   font-size: 1.1rem;
   line-height: 1;
@@ -276,15 +280,27 @@ button.app-nav-toggle {
   }
 
   .app-nav {
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 0.75rem;
     width: 100%;
-    padding-top: 1rem;
+    max-height: 0;
+    padding-top: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition:
+      max-height 0.2s ease,
+      padding-top 0.2s ease,
+      visibility 0s linear 0.2s;
   }
 
   .app-nav.open {
-    display: flex;
+    max-height: 20rem;
+    padding-top: 1rem;
+    visibility: visible;
+    transition:
+      max-height 0.2s ease,
+      padding-top 0.2s ease;
   }
 
   .step-row {
@@ -318,6 +334,13 @@ button.app-nav-toggle {
 
   .step-row-header {
     display: none;
+  }
+}
+
+@media (max-width: 600px) and (prefers-reduced-motion: reduce) {
+  .app-nav,
+  .app-nav.open {
+    transition: none;
   }
 }
 

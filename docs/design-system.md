@@ -123,6 +123,8 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | 空状態 | `.empty-state` | 一覧0件時のプレースホルダー |
 | focus(キーボード操作) | `a:focus-visible`, `button:focus-visible`, `input:focus-visible`, `select:focus-visible`, `textarea:focus-visible` に `outline: 2px solid var(--color-accent); outline-offset: 2px;` を共通適用。 | ポインタ操作(クリック/タップ)では表示されない(`:focus-visible` の既定挙動)。全インタラクティブ要素に個別のクラス追加不要。 |
 | タップ(モバイル) | `*` に `-webkit-tap-highlight-color: transparent` を適用。 | ブラウザ既定のパレット外タップハイライト(青系の半透明オーバーレイ)を無効化。タップ時の代替フィードバックは各要素の `:active`/`:hover` スタイルに依存する(専用のtap状態は未整備)。 |
+| 現在のセクション(グローバルナビ) | `.app-nav a.active`。`App.vue` の `computed`(`isRecipesActive` 等)が現在の `route.path` からセクション単位(`/recipes/*` はレシピ、等)で判定し付与する。 | Vue Routerの `router-link-exact-active`(完全一致)だけに頼ると、ネストしたルート(`/recipes/:id/edit` 等)にいる間ハイライトが消える不具合があった(Issue #75)。ログイン/新規登録リンクはネストしないため、引き続き `.router-link-exact-active` に依存(同じCSSルールで両セレクタを併記)。 |
+| 開閉(モバイルナビ) | `.app-nav`/`.app-nav.open`(600px以下)。`max-height`+`padding-top`+`visibility` を `transition` で切り替える。 | `visibility` は `transition-delay` で開くときは即座に、閉じるときは`max-height`のアニメーション終了後に切り替え、閉じている間はキーボードフォーカス/スクリーンリーダーの対象から外す。`prefers-reduced-motion: reduce` 環境では別途 `transition: none` を適用(下の専用`@media`ブロック)。 |
 
 ## 6. レスポンシブパターン
 
@@ -157,6 +159,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
    - アイコンのみ・記号のみのインタラクティブ要素(星評価ボタンなど)には `aria-label` を付与する。`<span>`/`<div>` など既定ロールが `generic` の要素に付与しても無視されるため、`role="img"`/`role="group"` 等 `aria-label` を許容するロールを併せて指定する。
    - 色だけで状態を伝える新規UIは避け、テキスト/アイコン/形状のいずれかを併用する。
    - キーボードフォーカス時のインジケータは `a`/`button`/`input`/`select`/`textarea` への共通 `:focus-visible` スタイル(5節)で担保済み。これら以外のタグで独自のインタラクティブ要素を作る場合のみ、同様の `outline` スタイルを追加する。
+8. **アニメーション/transition**(初出: `.app-nav` の開閉、5節参照): `transition` を新規に追加する場合、`@media (prefers-reduced-motion: reduce)` で対象セレクタに `transition: none` を適用する専用ブロックを必ず併記する。既存の `600px` ブレークポイントと組み合わせる場合は `@media (max-width: 600px) and (prefers-reduced-motion: reduce)` のように条件を連結する。
 
 **逸脱が許される条件**: 既存のパターンでは表現できない新しい概念(例: これまでにない種類の状態やレイアウト)を追加する場合に限り、新しいクラス・カスタムプロパティの追加を認める。その場合も、追加した要素は必ずこのドキュメントの該当節に追記し、他の実装からも再利用できる形(汎用クラス名・命名規則の一貫性)にすること。単に「今回だけ楽だから」という理由でのインラインstyleや使い捨てクラスの追加は行わない。
 
