@@ -51,6 +51,16 @@ textarea:focus-visible {
   padding: 0 1rem 3rem;
 }
 
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0 1rem;
+}
+
+.grid-12 > * {
+  grid-column: 1 / -1;
+}
+
 .app-header {
   display: flex;
   align-items: center;

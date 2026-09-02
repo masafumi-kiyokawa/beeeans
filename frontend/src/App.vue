@@ -21,7 +21,7 @@ async function onLogout() {
 </script>
 
 <template>
-  <div class="app-shell">
+  <div class="app-shell grid-12">
     <header class="app-header">
       <h1 class="app-title">beans</h1>
       <button
