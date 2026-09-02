@@ -19,7 +19,10 @@ function makeRouter() {
     history: createMemoryHistory(),
     routes: [
       { path: "/", component: { template: "<div>home</div>" } },
+      { path: "/recipes/:id", component: { template: "<div>recipe detail</div>" } },
+      { path: "/beans", component: { template: "<div>beans</div>" } },
       { path: "/logs", component: { template: "<div>logs</div>" } },
+      { path: "/logs/new", component: { template: "<div>log new</div>" } },
       { path: "/login", component: { template: "<div>login</div>" } },
       { path: "/register", component: { template: "<div>register</div>" } },
     ],
@@ -73,6 +76,39 @@ describe("App.vue", () => {
     expect(wrapper.text()).toContain("a@example.com");
     expect(wrapper.text()).toContain("ログアウト");
     expect(wrapper.text()).not.toContain("ログイン");
+  });
+
+  it("keeps the レシピ link marked active while on a nested recipe route", async () => {
+    const router = makeRouter();
+    await router.push("/recipes/r1");
+    await router.isReady();
+    const wrapper = mount(App, { global: { plugins: [router] } });
+    const links = wrapper.findAll("a");
+    const recipesLink = links.find((l) => l.text() === "レシピ");
+    const logsLink = links.find((l) => l.text() === "抽出ログ");
+    expect(recipesLink?.classes()).toContain("active");
+    expect(logsLink?.classes()).not.toContain("active");
+  });
+
+  it("keeps the 抽出ログ link marked active while on /logs/new", async () => {
+    const router = makeRouter();
+    await router.push("/logs/new");
+    await router.isReady();
+    const wrapper = mount(App, { global: { plugins: [router] } });
+    const logsLink = wrapper.findAll("a").find((l) => l.text() === "抽出ログ");
+    expect(logsLink?.classes()).toContain("active");
+  });
+
+  it("toggle button's aria-label reflects the open/closed state", async () => {
+    const router = makeRouter();
+    await router.push("/");
+    await router.isReady();
+    const wrapper = mount(App, { global: { plugins: [router] } });
+    const toggle = wrapper.find("button.app-nav-toggle");
+    expect(toggle.attributes("aria-label")).toBe("メニューを開く");
+
+    await toggle.trigger("click");
+    expect(toggle.attributes("aria-label")).toBe("メニューを閉じる");
   });
 
   it("clicking logout calls logout() then navigates to /", async () => {
