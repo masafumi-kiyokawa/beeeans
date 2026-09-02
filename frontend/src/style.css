@@ -81,7 +81,7 @@ textarea:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 0;
+  padding: 1rem 0;
   border-bottom: 1px solid var(--color-border);
   margin-bottom: 1.5rem;
 }
@@ -123,7 +123,6 @@ button.app-nav-toggle {
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   padding: var(--spacing);
-  margin-bottom: 1rem;
 }
 
 .card-list {

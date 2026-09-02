@@ -2,6 +2,7 @@
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { register } from "../auth/session";
+import SectionHeader from "../components/SectionHeader.vue";
 
 const router = useRouter();
 
@@ -29,7 +30,7 @@ async function onSubmit() {
 
 <template>
   <div>
-    <h2>新規登録</h2>
+    <SectionHeader title="新規登録" />
     <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
     <form class="card" @submit.prevent="onSubmit">
       <div class="form-row">

@@ -58,15 +58,40 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 | 値 | 主な用途 |
 |---|---|
-| `0.25rem` | `.form-row` 内のlabel-input間ギャップ、`.step-row` のグリッドギャップ(モバイル) |
+| `0.25rem` | `.form-row` 内のlabel-input間ギャップ、`.step-row` のグリッドギャップ(モバイル)、`.rating-stars` のギャップ |
 | `0.35rem` | `.step-row-header` の下余白 |
 | `0.5rem` | `.btn` の縦padding、`.btn-row`/`.step-row` のギャップ、テーブルセルのpadding |
 | `0.75rem` | `.card-list` のギャップ、`.section-title` の下余白 |
-| `1rem`(`--spacing`) | `.card` のpadding、`.form-row`/`.card-list` 項目間の下余白、`.btn` の横padding |
-| `1.5rem` | `.app-header`・`.timer-display` の縦マージン、`.section-title` の上マージン |
-| `3rem` | `.timer-display` のフォントサイズ(参考: フォントサイズにも同じスケール感覚を流用している) |
+| `1rem`(`--spacing`) | `.card` のpadding、`.form-row` 項目間の下余白、`.btn` の横padding、`.app-header` の縦padding、`.grid-12`/`.form-grid` の横ガター |
+| `1.5rem` | `.app-header`・`.timer-display` の縦マージン、`.section-title` の上マージン、`.btn-row-center` の下マージン |
+| `3rem` | `.timer-display` のフォントサイズ、`.app-shell` の下padding(ページ末尾の余白) |
+
+### 余白の階層(なぜその値を選ぶか)
+
+値の一覧だけでは「なぜこの箇所にこの値を選んだか」が伝わらず、似た役割の箇所で異なる値が使われる原因になっていた(Issue #90)。値は次の4階層のどれに属するかで選ぶこと。
+
+| 階層 | 値の目安 | 意味 | 例 |
+|---|---|---|---|
+| インライン | `0.25rem` | 同じ意味のまとまりの中の、密着させたい要素同士(ラベルと入力、アイコンと文字) | `.form-row` のlabel-inputギャップ、`.rating-stars` のギャップ |
+| 要素内 | `0.35rem`〜`0.5rem` | 1つのコンポーネント内部のpadding、または横並び要素間の狭いギャップ | `.btn` のpadding、`.btn-row`/`.step-row` のギャップ、テーブルセルのpadding |
+| 要素間 | `0.75rem`〜`1rem` | 同じ種類の要素(カード、フォーム項目)が並ぶときの、要素同士の区切り | `.card-list` のギャップ、`.form-row` 同士の下余白 |
+| セクション間 | `1.5rem`〜`3rem` | 画面内の意味の異なるまとまり同士の区切り、またはページ末尾の余白 | `.section-title` の上マージン、`.app-shell` の下padding |
+
+新しい余白を追加するときは、まず「これは上記4階層のどれに当たるか」を判断し、その階層の目安値から選ぶ。既存クラスの値を流用できる場合はそちらを優先する。
+
+### 上下マージンを非対称にする場合のルール
+
+`.section-title { margin: 1.5rem 0 0.75rem; }` のように、同じブロックの上下マージンをあえて異なる値にしている箇所がある。これは「直前のセクションとは広く区切る(セクション間: `1.5rem`)が、直後の本文とは近く繋げる(要素間: `0.75rem`)」という意図的な階層の使い分けであり、値を間違えたわけではない。**上下マージンを非対称にする新しいクラス・スタイルを追加する場合、この理由(何と広く区切り、何と近く繋げるか)を8節9項のルールに従いコメントまたはこのドキュメントに一行で明記すること。** 理由を説明できない非対称は、単なる値の選び間違いである可能性が高いので避ける。
+
+### スペーシングスケールの例外
+
+以下は上記スケールに載らない値だが、余白ではなく別の制約(アクセシビリティ上の最小サイズ)に基づく意図的な例外であり、これ以上増やさない。
+
+- `button.app-nav-toggle` の `padding: 0.625rem`:同要素は `min-width: 44px; min-height: 44px;` でタップ操作の最小サイズ(WCAG 2.5.5)を確保しており、実際のボタンサイズはこの `min-width`/`min-height` が支配する(paddingの値自体はボタンの外形サイズにほぼ影響しない)。過去にこの要素の見た目が原因で誤った修正が行われた経緯があるため(7節「経緯メモ」参照)、padding値の変更は最小限にとどめる。
 
 かつては `style="margin-top: 0"` や `style="margin-top: 1rem"` のようなインラインstyleが複数箇所に散在していたが、繰り返しパターンをユーティリティクラス化して解消した:`.section-title:first-child`(コンテナ内の最初の見出しでは上マージンを打ち消す)、`.stack-top`(直前のブロックと区切るための `margin-top: var(--spacing)`)、`.btn-row-center`(`.btn-row` と併用し、ボタンを中央寄せして下マージン `1.5rem` を付与する汎用修飾クラス)、`.form-row-narrow`(絞り込みセレクトなど横幅を絞る `.form-row`)。新しい余白調整が必要になった場合も、インラインstyleではなくこれらの再利用かユーティリティクラスの追加を優先すること(詳細は8節)。
+
+`.card` は自身に `margin-bottom` を持たない(意図的)。カード同士の間隔は置かれる文脈によって次のどちらかに委ねる:`.card-list`(4節)の直下に並ぶ場合はコンテナの `gap: 0.75rem` が、それ以外のプレーンな縦積みの場合は直後の要素(`.section-title` の `margin-top: 1.5rem` など)のマージンとのブロックmargin collapseが、それぞれ間隔を決める。かつては `.card` 自身にも `margin-bottom: 1rem` があったため、flexコンテナである `.card-list` の `gap`(marginとcollapseしない)と二重に効いてリスト内カード間隔が `1.75rem` というスケール外の合成値になっていた(Issue #90)。新しく `.card` を使う箇所を追加する場合、`.card` に個別の `margin-bottom` を書き足さないこと。
 
 ## 3. タイポグラフィ
 
@@ -160,7 +185,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 新しいコンポーネント・画面・状態を追加するときは、次の順で検討する。
 
 1. **色**: 1節の8変数のいずれかで表現できないか確認する。新しい16進数カラーを直接書く前に、既存のいずれかの意味(bg/surface/border/text/text-muted/accent/accent-hover/danger)に当てはまらないか検討する。当てはまらない場合のみ新しいカスタムプロパティを `:root` に追加し、このドキュメントの1節にも追記する。**新しいインタラクティブ要素のクラスを書く場合、`color`/`background`/`border` のうち見た目に関わる全プロパティを明示するか、`.btn`/`.btn-secondary`/`.btn-danger` と組み合わせて不足分を継承させる。一部のプロパティだけパレット変数を使い、残り(特に `color`)をブラウザ既定色に委ねる「部分的な one-off クラス」を作らない**(`.app-nav-toggle` が `color` 未定義のままリリースされ、パレット外の色に見えた実例——7節参照)。
-2. **余白**: 2節の値(`0.25rem`〜`3rem`の列挙)から選ぶ。インラインの `style="margin..."` は使わない——既存の逸脱(2節参照)をこれ以上増やさない。繰り返し必要になる余白パターンなら、新しいユーティリティクラスとして `style.css` に切り出す。
+2. **余白**: 2節の値(`0.25rem`〜`3rem`の列挙)から選ぶ。まず2節「余白の階層」の4階層(インライン/要素内/要素間/セクション間)のどれに当たるかを判断し、その階層の目安値から選ぶ。インラインの `style="margin..."` は使わない——既存の逸脱(2節参照)をこれ以上増やさない。繰り返し必要になる余白パターンなら、新しいユーティリティクラスとして `style.css` に切り出す。**同じブロックの上下(または左右)マージンを非対称にする場合、何と広く区切り・何と近く繋げるかという理由をコメントまたはこのドキュメント(2節)に一行で明記する**(`.section-title` の上下非対称の例——2節参照)。理由を説明できない非対称は追加しない。
 3. **タイポグラフィ**: 3節のサイズ/太さの使い分け(見出し/本文/補助/ラベル)から選ぶ。`font-family` は上書きしない。
 4. **コンポーネント**: 4節の既存ユーティリティクラス(`.card` `.btn`系 `.form-row` `.form-grid` `.table` `.step-row` `.rating-stars` `.section-title` `.empty-state` `.form-error` `.muted` 等)で表現できないか確認する。特に `.btn`/`.btn-secondary`/`.btn-danger` の使い分け(プライマリ/セカンダリ/破壊的)は必ず守る。ボタンの配置は4節「ボタン配置」の通り基本的に右寄せ(`.btn-row` の既定 `justify-content: flex-end` をそのまま使う)とし、中央寄せが必要な場合のみ `.btn-row-center` を使う。**非プライマリな操作用のボタン/トグル(ハンバーガーメニューの開閉など)を新規に作る場合、独自クラスを一から書く前に必ず `.btn-secondary` と組み合わせられないか検討する**(見た目に関わるプロパティを個別クラスだけで完結させようとすると、一部のプロパティの書き忘れに気づきにくい)。**スタイル(色/余白/フォント)だけでなく、マークアップの構造そのもの(要素の入れ子・スロットの役割)が複数画面で繰り返される場合は、ユーティリティクラスの追加だけでなく9節の共通Vueコンポーネント化も検討する。**
 5. **状態表現**: 5節のパターン(hover/disabled/エラー/current/done/active/focus)に倣う。色だけに依存する新しい状態を追加する場合、7節を踏まえてテキストやアイコンなど色以外の手がかりも検討する。`a`/`button`/`input`/`select`/`textarea` は `:focus-visible` の共通スタイルが既に適用されるため、新しいインタラクティブ要素を追加する場合は個別対応不要(タグ名がこれらと異なる独自要素を作る場合のみ、同じ `outline` スタイルの追加を検討する)。
@@ -194,7 +219,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 | コンポーネント | 役割 | props / slots | 使用箇所 |
 |---|---|---|---|
-| `SectionHeader` | 見出し+右寄せアクション行(`.section-title`)の共通化。見出しをプレーンな文字列で渡す場合は`title` prop、`RouterLink`/`strong`などの見出し代替が必要な場合はデフォルトスロットを使う。アクションが不要なら`actions`スロットを省略する。 | props: `title?: string`。slots: デフォルト(`title`未指定時の見出し領域)、`actions`(右寄せの任意コンテンツ、省略可)。 | `RecipeListView.vue`(2)・`RecipeDetailView.vue`(3)・`BeanListView.vue`(2)・`BeanDetailView.vue`(3)・`BrewLogListView.vue`(1)・`BrewLogCard.vue`(1) |
+| `SectionHeader` | 見出し+右寄せアクション行(`.section-title`)の共通化。見出しをプレーンな文字列で渡す場合は`title` prop、`RouterLink`/`strong`などの見出し代替が必要な場合はデフォルトスロットを使う。アクションが不要なら`actions`スロットを省略する。ページ見出し(`<h2>`)は一覧・詳細・フォーム・ログイン/登録・タイマーの全画面でこのコンポーネント経由に統一しており、素の`<h2>`を直接書かない(Issue #90:かつてフォーム系画面が素の`<h2>`を使い、ブラウザ既定のマージン・サイズに依存していたため一覧/詳細画面と見た目が食い違っていた)。 | props: `title?: string`。slots: デフォルト(`title`未指定時の見出し領域)、`actions`(右寄せの任意コンテンツ、省略可)。 | `RecipeListView.vue`(2)・`RecipeDetailView.vue`(3)・`BeanListView.vue`(2)・`BeanDetailView.vue`(3)・`BrewLogListView.vue`(1)・`BrewLogCard.vue`(1)・`BeanFormView.vue`(1)・`RecipeFormView.vue`(1)・`BrewLogFormView.vue`(1)・`LoginView.vue`(1)・`RegisterView.vue`(1)・`BrewTimerView.vue`(1) |
 | `AsyncListShell` | 「ロード中→空状態→一覧」の3値表示切り替えシェルの共通化。`loading`を省略すると2段(空状態/一覧)のみの表示になり、ページ側で既にロード済みのネストした一覧(詳細画面内の関連一覧)で使う。 | props: `loading?: boolean`、`isEmpty: boolean`。slots: `empty`(空状態メッセージ、コンポーネント側で`.empty-state`にラップ)、デフォルト(0件でない場合の一覧本体、コンポーネント側で`.card-list`にラップ)。 | `RecipeListView.vue`・`BeanListView.vue`・`BrewLogListView.vue`(以上3ファイルは`loading`あり)、`RecipeDetailView.vue`・`BeanDetailView.vue`(以上2ファイルは`loading`なし) |
 | `SpecGrid` | ラベル(項目名)+値のペアを複数、10節の `.grid-12` 上に `.spec-cell`(`grid-column: span 3`)として配置する共通コンポーネント。ルート要素は `<dl class="grid-12 spec-grid">`、各セルは `<div class="spec-cell">` で `<dt>`(ラベル)+`<dd>`(値)を包む(スクリーンリーダーにラベル/値のペア関係が伝わるようセマンティックな要素を使用)。各セル内はラベルを値の上に積むのみで、色・フォントサイズによる追加の区別は行っていない(8節9項参照。スタイル面の調整は別PRで検討)。`/`区切り禁止ルール(Issue #81)の実装。 | props: `items: { label: string; value: string }[]`。 | `RecipeListView.vue`(豆の量/湯量/湯温/挽き目)、`RecipeDetailView.vue`(同+総抽出時間)、`BeanDetailView.vue`(豆の量/湯量/湯温、および産地/焙煎者/焙煎度/焙煎日)、`BeanListView.vue`(産地/焙煎者/焙煎度/焙煎日) |
 

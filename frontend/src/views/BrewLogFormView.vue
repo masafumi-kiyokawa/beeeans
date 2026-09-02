@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { createBrewLog, getBrewLog, listRecipes, updateBrewLog } from "../api/client";
+import SectionHeader from "../components/SectionHeader.vue";
 import type { Recipe } from "../types";
 
 const route = useRoute();
@@ -68,7 +69,7 @@ async function onSubmit() {
 
 <template>
   <div>
-    <h2>{{ isEdit ? "ログを編集" : "ログを記録" }}</h2>
+    <SectionHeader :title="isEdit ? 'ログを編集' : 'ログを記録'" />
     <form class="card" @submit.prevent="onSubmit">
       <div class="form-row">
         <label for="recipe">レシピ</label>
