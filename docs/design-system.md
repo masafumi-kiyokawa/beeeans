@@ -172,15 +172,14 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 ### 現時点で判明している切り出し候補(未実装)
 
-棚卸しの結果、以下2つの構造が既に生マークアップとして重複している。まだどちらも `frontend/src/components/` への切り出しは行っていない — 実装する際は下のカタログ表に実際のコンポーネント名・props/slots・使用箇所を追記すること。
+棚卸しの結果、以下の構造が既に生マークアップとして重複している。`frontend/src/components/` への切り出しが済んだものは下のカタログ表に移し、この一覧からは外すこと。
 
-1. **見出し + アクション行**: `<div class="section-title">` と `<h2>`(または `RouterLink`/`strong` などの見出し代替)の組み合わせ。`RecipeListView.vue`(2箇所)・`RecipeDetailView.vue`(3箇所)・`BeanListView.vue`(2箇所)・`BeanDetailView.vue`(3箇所)・`BrewLogListView.vue`(1箇所)・`BrewLogCard.vue`(1箇所)の6ファイル12箇所で重複。
-2. **一覧のロード/空状態/`.card-list`シェル**: 「読み込み中...」の文言 → 0件時の空状態メッセージ(`.empty-state`) → `<div class="card-list">` という3段構成。`RecipeListView.vue`/`BeanListView.vue`/`BrewLogListView.vue`/`RecipeDetailView.vue`/`BeanDetailView.vue` の5ファイルで重複(各エンティティのカード本体はエンティティ固有のため、シェル部分のみが切り出し対象)。
+1. **一覧のロード/空状態/`.card-list`シェル**: 「読み込み中...」の文言 → 0件時の空状態メッセージ(`.empty-state`) → `<div class="card-list">` という3段構成。`RecipeListView.vue`/`BeanListView.vue`/`BrewLogListView.vue`/`RecipeDetailView.vue`/`BeanDetailView.vue` の5ファイルで重複(各エンティティのカード本体はエンティティ固有のため、シェル部分のみが切り出し対象)。実装状況はIssue [#74](https://github.com/masafumi-kiyokawa/beeeans/issues/74) を参照。
 
 ### コンポーネントカタログ(実装済みのもののみ記載)
 
 | コンポーネント | 役割 | props / slots | 使用箇所 |
 |---|---|---|---|
-| (未実装) | — | — | — |
+| `SectionHeader` | 見出し+右寄せアクション行(`.section-title`)の共通化。見出しをプレーンな文字列で渡す場合は`title` prop、`RouterLink`/`strong`などの見出し代替が必要な場合はデフォルトスロットを使う。アクションが不要なら`actions`スロットを省略する。 | props: `title?: string`。slots: デフォルト(`title`未指定時の見出し領域)、`actions`(右寄せの任意コンテンツ、省略可)。 | `RecipeListView.vue`(2)・`RecipeDetailView.vue`(3)・`BeanListView.vue`(2)・`BeanDetailView.vue`(3)・`BrewLogListView.vue`(1)・`BrewLogCard.vue`(1) |
 
 新しい共通コンポーネントを `frontend/src/components/` に追加したら、この表に行を追加すること。ドキュメントとコードが乖離した状態でPRを出さない(既存の運用方針と同じ)。

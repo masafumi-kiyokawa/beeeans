@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { deleteRecipe, listBeans, listRecipes } from "../api/client";
 import type { Recipe } from "../types";
+import SectionHeader from "../components/SectionHeader.vue";
 
 const recipes = ref<Recipe[]>([]);
 const beanNameById = ref(new Map<string, string>());
@@ -30,10 +31,11 @@ onMounted(load);
 
 <template>
   <div>
-    <div class="section-title">
-      <h2>レシピ一覧</h2>
-      <RouterLink class="btn" to="/recipes/new">新規レシピ</RouterLink>
-    </div>
+    <SectionHeader title="レシピ一覧">
+      <template #actions>
+        <RouterLink class="btn" to="/recipes/new">新規レシピ</RouterLink>
+      </template>
+    </SectionHeader>
 
     <p v-if="loading" class="muted">読み込み中...</p>
     <p v-else-if="recipes.length === 0" class="empty-state">
@@ -42,11 +44,11 @@ onMounted(load);
 
     <div v-else class="card-list">
       <div v-for="recipe in recipes" :key="recipe.id" class="card">
-        <div class="section-title">
+        <SectionHeader>
           <RouterLink :to="`/recipes/${recipe.id}`"
             ><strong>{{ recipe.name }}</strong></RouterLink
           >
-        </div>
+        </SectionHeader>
         <p class="muted" v-if="recipe.bean_id && beanNameById.get(recipe.bean_id)">
           {{ beanNameById.get(recipe.bean_id) }}
         </p>

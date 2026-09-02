@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { deleteBean, listBeans } from "../api/client";
 import type { Bean } from "../types";
 import { isSafePurchaseUrl } from "../utils/url";
+import SectionHeader from "../components/SectionHeader.vue";
 
 const beans = ref<Bean[]>([]);
 const loading = ref(true);
@@ -31,10 +32,11 @@ onMounted(load);
 
 <template>
   <div>
-    <div class="section-title">
-      <h2>豆一覧</h2>
-      <RouterLink class="btn" to="/beans/new">新規の豆</RouterLink>
-    </div>
+    <SectionHeader title="豆一覧">
+      <template #actions>
+        <RouterLink class="btn" to="/beans/new">新規の豆</RouterLink>
+      </template>
+    </SectionHeader>
 
     <p v-if="loading" class="muted">読み込み中...</p>
     <p v-else-if="beans.length === 0" class="empty-state">
@@ -43,9 +45,9 @@ onMounted(load);
 
     <div v-else class="card-list">
       <div v-for="bean in beans" :key="bean.id" class="card">
-        <div class="section-title">
+        <SectionHeader>
           <strong>{{ bean.name }}</strong>
-        </div>
+        </SectionHeader>
         <p class="muted" v-if="bean.origin || bean.roaster">
           {{ [bean.origin, bean.roaster].filter(Boolean).join(" / ") }}
         </p>

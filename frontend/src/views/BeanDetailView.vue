@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { deleteBean, getBean, listRecipes } from "../api/client";
 import type { Bean, Recipe } from "../types";
 import { isSafePurchaseUrl } from "../utils/url";
+import SectionHeader from "../components/SectionHeader.vue";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -38,13 +39,14 @@ async function onDelete() {
 <template>
   <div v-if="loading" class="muted">読み込み中...</div>
   <div v-else-if="bean">
-    <div class="section-title">
-      <h2>{{ bean.name }}</h2>
-      <div class="btn-row">
-        <RouterLink class="btn btn-secondary" :to="`/beans/${bean.id}/edit`">編集</RouterLink>
-        <button class="btn btn-danger" @click="onDelete">削除</button>
-      </div>
-    </div>
+    <SectionHeader :title="bean.name">
+      <template #actions>
+        <div class="btn-row">
+          <RouterLink class="btn btn-secondary" :to="`/beans/${bean.id}/edit`">編集</RouterLink>
+          <button class="btn btn-danger" @click="onDelete">削除</button>
+        </div>
+      </template>
+    </SectionHeader>
 
     <div class="card">
       <p class="muted" v-if="bean.origin || bean.roaster">
@@ -63,18 +65,19 @@ async function onDelete() {
       <p v-if="bean.notes">{{ bean.notes }}</p>
     </div>
 
-    <div class="section-title">
-      <h2>このコーヒー豆を使うレシピ</h2>
-      <RouterLink class="btn" :to="`/recipes/new?bean_id=${bean.id}`">新規レシピ</RouterLink>
-    </div>
+    <SectionHeader title="このコーヒー豆を使うレシピ">
+      <template #actions>
+        <RouterLink class="btn" :to="`/recipes/new?bean_id=${bean.id}`">新規レシピ</RouterLink>
+      </template>
+    </SectionHeader>
     <p v-if="recipes.length === 0" class="empty-state">この豆を使うレシピはまだありません。</p>
     <div v-else class="card-list">
       <div v-for="recipe in recipes" :key="recipe.id" class="card">
-        <div class="section-title">
+        <SectionHeader>
           <RouterLink :to="`/recipes/${recipe.id}`"
             ><strong>{{ recipe.name }}</strong></RouterLink
           >
-        </div>
+        </SectionHeader>
         <p class="muted">
           豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃
         </p>

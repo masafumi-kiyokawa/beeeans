@@ -5,6 +5,7 @@ import { deleteRecipe, getBean, getRecipe, listBrewLogs } from "../api/client";
 import type { Bean, BrewLog, RecipeDetail } from "../types";
 import PourStepEditor from "../components/PourStepEditor.vue";
 import BrewLogCard from "../components/BrewLogCard.vue";
+import SectionHeader from "../components/SectionHeader.vue";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -41,17 +42,18 @@ async function onDelete() {
 <template>
   <div v-if="loading" class="muted">読み込み中...</div>
   <div v-else-if="recipe">
-    <div class="section-title">
-      <h2>{{ recipe.name }}</h2>
-      <div class="btn-row">
-        <RouterLink class="btn" :to="`/recipes/${recipe.id}/brew`">タイマー開始</RouterLink>
-        <RouterLink class="btn btn-secondary" :to="`/logs/new?recipe_id=${recipe.id}`"
-          >ログを記録</RouterLink
-        >
-        <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/edit`">編集</RouterLink>
-        <button class="btn btn-danger" @click="onDelete">削除</button>
-      </div>
-    </div>
+    <SectionHeader :title="recipe.name">
+      <template #actions>
+        <div class="btn-row">
+          <RouterLink class="btn" :to="`/recipes/${recipe.id}/brew`">タイマー開始</RouterLink>
+          <RouterLink class="btn btn-secondary" :to="`/logs/new?recipe_id=${recipe.id}`"
+            >ログを記録</RouterLink
+          >
+          <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/edit`">編集</RouterLink>
+          <button class="btn btn-danger" @click="onDelete">削除</button>
+        </div>
+      </template>
+    </SectionHeader>
 
     <div class="card">
       <p v-if="bean" class="muted">
@@ -65,16 +67,12 @@ async function onDelete() {
       <p v-if="recipe.notes">{{ recipe.notes }}</p>
     </div>
 
-    <div class="section-title">
-      <h2>注湯ステップ</h2>
-    </div>
+    <SectionHeader title="注湯ステップ" />
     <div class="card">
       <PourStepEditor :recipe-id="recipe.id" />
     </div>
 
-    <div class="section-title">
-      <h2>抽出ログ</h2>
-    </div>
+    <SectionHeader title="抽出ログ" />
     <p v-if="logs.length === 0" class="empty-state">まだログがありません。</p>
     <div v-else class="card-list">
       <BrewLogCard v-for="log in logs" :key="log.id" :log="log" @deleted="load" />

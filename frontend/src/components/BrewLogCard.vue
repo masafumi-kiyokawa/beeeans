@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { deleteBrewLog } from "../api/client";
 import type { BrewLog, BrewLogWithRecipeName } from "../types";
+import SectionHeader from "./SectionHeader.vue";
 
 const props = defineProps<{
   log: BrewLog | BrewLogWithRecipeName;
@@ -33,17 +34,19 @@ function isWithRecipeName(log: BrewLog | BrewLogWithRecipeName): log is BrewLogW
 
 <template>
   <div class="card">
-    <div class="section-title">
+    <SectionHeader>
       <div>
         <strong v-if="showRecipeName && isWithRecipeName(log)">{{ log.recipe_name }}</strong>
         <span class="muted">{{ formatDate(log.brewed_at) }}</span>
       </div>
-      <span class="rating-stars" role="img" :aria-label="`評価 5段階中${log.rating}`">
-        <span v-for="n in 5" :key="n" :class="{ active: n <= log.rating }" aria-hidden="true"
-          >★</span
-        >
-      </span>
-    </div>
+      <template #actions>
+        <span class="rating-stars" role="img" :aria-label="`評価 5段階中${log.rating}`">
+          <span v-for="n in 5" :key="n" :class="{ active: n <= log.rating }" aria-hidden="true"
+            >★</span
+          >
+        </span>
+      </template>
+    </SectionHeader>
     <p v-if="log.notes">{{ log.notes }}</p>
     <div class="btn-row">
       <RouterLink class="btn btn-secondary" :to="`/logs/${log.id}/edit`">編集</RouterLink>
