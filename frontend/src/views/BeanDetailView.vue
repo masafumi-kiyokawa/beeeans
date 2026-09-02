@@ -5,6 +5,7 @@ import { deleteBean, getBean, listRecipes } from "../api/client";
 import type { Bean, Recipe } from "../types";
 import { isSafePurchaseUrl } from "../utils/url";
 import SectionHeader from "../components/SectionHeader.vue";
+import AsyncListShell from "../components/AsyncListShell.vue";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -70,8 +71,8 @@ async function onDelete() {
         <RouterLink class="btn" :to="`/recipes/new?bean_id=${bean.id}`">新規レシピ</RouterLink>
       </template>
     </SectionHeader>
-    <p v-if="recipes.length === 0" class="empty-state">この豆を使うレシピはまだありません。</p>
-    <div v-else class="card-list">
+    <AsyncListShell :is-empty="recipes.length === 0">
+      <template #empty>この豆を使うレシピはまだありません。</template>
       <div v-for="recipe in recipes" :key="recipe.id" class="card">
         <SectionHeader>
           <RouterLink :to="`/recipes/${recipe.id}`"
@@ -86,6 +87,6 @@ async function onDelete() {
           <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/edit`">編集</RouterLink>
         </div>
       </div>
-    </div>
+    </AsyncListShell>
   </div>
 </template>

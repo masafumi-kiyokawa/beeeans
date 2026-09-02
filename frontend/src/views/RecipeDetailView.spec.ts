@@ -14,6 +14,7 @@ import RecipeDetailView from "./RecipeDetailView.vue";
 import BrewLogCard from "../components/BrewLogCard.vue";
 import PourStepEditor from "../components/PourStepEditor.vue";
 import SectionHeader from "../components/SectionHeader.vue";
+import AsyncListShell from "../components/AsyncListShell.vue";
 
 const recipe = {
   id: "r1",
@@ -58,7 +59,7 @@ async function mountView(id = "r1") {
   await router.isReady();
   const wrapper = mount(RecipeDetailView, {
     props: { id },
-    global: { plugins: [router], stubs: { SectionHeader } },
+    global: { plugins: [router], stubs: { SectionHeader, AsyncListShell } },
     shallow: true,
   });
   await flushPromises();
