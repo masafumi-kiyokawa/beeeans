@@ -186,6 +186,9 @@ button.app-nav-toggle {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-text-muted);
+  /* 対応する input/select/textarea の border(1px) + padding-left(0.5rem)分だけ
+     ラベルのテキスト開始位置を右にずらし、両者の文字開始位置を揃える */
+  padding-left: calc(1px + 0.5rem);
 }
 
 .form-row input,

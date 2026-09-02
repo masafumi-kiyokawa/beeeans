@@ -80,6 +80,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
   - `0.75rem` — さらに小さい補足(`.step-sub`)
   - `3rem` — タイマー表示のみの特例(`.timer-display`、`font-variant-numeric: tabular-nums` 併用)
 - 太字は「ラベル・見出し・ナビゲーション」に `font-weight: 600`(`.app-nav a`, `.form-row label`, `.table th`, `.step-row-header`)、それ以外は既定のweightを使う。`700` は `.timer-display` のみの特例。
+- **`.form-row` のラベルと入力要素の文字開始位置を揃える**:`.form-row` はラベルを入力要素の上に縦積みするレイアウト(`flex-direction: column`)のため、`input`/`select`/`textarea` は `border: 1px solid` + `padding: 0.5rem` を持ち、テキストの開始位置がコンテナ左端から `border(1px) + padding-left(0.5rem)` 分オフセットされる。ラベル側にも同じ値を `padding-left: calc(1px + 0.5rem)` として与え、両者のテキスト開始位置を縦に揃える(`.form-row label`)。新しく「ラベル + 入力要素」の縦積みパターンを追加する場合もこのオフセットを踏襲する。
 
 ## 4. 既存ユーティリティクラス一覧
 
