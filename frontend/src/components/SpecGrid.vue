@@ -3,10 +3,10 @@ defineProps<{ items: { label: string; value: string }[] }>();
 </script>
 
 <template>
-  <div class="grid-12">
+  <dl class="grid-12 spec-grid">
     <div class="spec-cell" v-for="item in items" :key="item.label">
-      <div>{{ item.label }}</div>
-      <div>{{ item.value }}</div>
+      <dt>{{ item.label }}</dt>
+      <dd>{{ item.value }}</dd>
     </div>
-  </div>
+  </dl>
 </template>
