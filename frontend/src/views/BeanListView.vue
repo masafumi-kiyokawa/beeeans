@@ -4,6 +4,7 @@ import { deleteBean, listBeans } from "../api/client";
 import type { Bean } from "../types";
 import { isSafePurchaseUrl } from "../utils/url";
 import SectionHeader from "../components/SectionHeader.vue";
+import AsyncListShell from "../components/AsyncListShell.vue";
 
 const beans = ref<Bean[]>([]);
 const loading = ref(true);
@@ -38,12 +39,8 @@ onMounted(load);
       </template>
     </SectionHeader>
 
-    <p v-if="loading" class="muted">読み込み中...</p>
-    <p v-else-if="beans.length === 0" class="empty-state">
-      まだ豆が登録されていません。「新規の豆」から作成してください。
-    </p>
-
-    <div v-else class="card-list">
+    <AsyncListShell :loading="loading" :is-empty="beans.length === 0">
+      <template #empty>まだ豆が登録されていません。「新規の豆」から作成してください。</template>
       <div v-for="bean in beans" :key="bean.id" class="card">
         <SectionHeader>
           <strong>{{ bean.name }}</strong>
@@ -68,6 +65,6 @@ onMounted(load);
           <button class="btn btn-danger" @click="onDelete(bean)">削除</button>
         </div>
       </div>
-    </div>
+    </AsyncListShell>
   </div>
 </template>

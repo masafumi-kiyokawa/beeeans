@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { deleteRecipe, listBeans, listRecipes } from "../api/client";
 import type { Recipe } from "../types";
 import SectionHeader from "../components/SectionHeader.vue";
+import AsyncListShell from "../components/AsyncListShell.vue";
 
 const recipes = ref<Recipe[]>([]);
 const beanNameById = ref(new Map<string, string>());
@@ -37,12 +38,8 @@ onMounted(load);
       </template>
     </SectionHeader>
 
-    <p v-if="loading" class="muted">読み込み中...</p>
-    <p v-else-if="recipes.length === 0" class="empty-state">
-      まだレシピがありません。「新規レシピ」から作成してください。
-    </p>
-
-    <div v-else class="card-list">
+    <AsyncListShell :loading="loading" :is-empty="recipes.length === 0">
+      <template #empty>まだレシピがありません。「新規レシピ」から作成してください。</template>
       <div v-for="recipe in recipes" :key="recipe.id" class="card">
         <SectionHeader>
           <RouterLink :to="`/recipes/${recipe.id}`"
@@ -64,6 +61,6 @@ onMounted(load);
           <button class="btn btn-danger" @click="onDelete(recipe)">削除</button>
         </div>
       </div>
-    </div>
+    </AsyncListShell>
   </div>
 </template>

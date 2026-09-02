@@ -5,6 +5,7 @@ import { listBrewLogs, listRecipes } from "../api/client";
 import type { BrewLogWithRecipeName, Recipe } from "../types";
 import BrewLogCard from "../components/BrewLogCard.vue";
 import SectionHeader from "../components/SectionHeader.vue";
+import AsyncListShell from "../components/AsyncListShell.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -48,10 +49,9 @@ watch(selectedRecipeId, (value) => {
       </select>
     </div>
 
-    <p v-if="loading" class="muted">読み込み中...</p>
-    <p v-else-if="logs.length === 0" class="empty-state">まだログがありません。</p>
-    <div v-else class="card-list">
+    <AsyncListShell :loading="loading" :is-empty="logs.length === 0">
+      <template #empty>まだログがありません。</template>
       <BrewLogCard v-for="log in logs" :key="log.id" :log="log" show-recipe-name @deleted="load" />
-    </div>
+    </AsyncListShell>
   </div>
 </template>

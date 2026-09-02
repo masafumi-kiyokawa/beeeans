@@ -7,6 +7,7 @@ vi.mock("../api/client", () => clientMocks);
 
 import BrewLogListView from "./BrewLogListView.vue";
 import BrewLogCard from "../components/BrewLogCard.vue";
+import AsyncListShell from "../components/AsyncListShell.vue";
 
 const recipeA = {
   id: "r1",
@@ -45,7 +46,10 @@ async function mountView(query = "") {
   const router = makeRouter();
   await router.push(`/logs${query}`);
   await router.isReady();
-  const wrapper = mount(BrewLogListView, { global: { plugins: [router] }, shallow: true });
+  const wrapper = mount(BrewLogListView, {
+    global: { plugins: [router], stubs: { AsyncListShell } },
+    shallow: true,
+  });
   await flushPromises();
   return { wrapper, router };
 }
