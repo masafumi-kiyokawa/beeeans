@@ -22,8 +22,8 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 | 変数 | 値 | 用途 |
 |---|---|---|
-| `--color-accent` | `#8a5a35` | プライマリアクション(`.btn` 背景、リンク色、`.btn-secondary` 文字色)。 |
-| `--color-accent-hover` | `#6f4527` | `--color-accent` のhover/active状態。ナビゲーションのアクティブリンク色にも使用。 |
+| `--color-accent` | `#8a5a35` | プライマリアクション(`.btn` 背景、`.btn-secondary` 文字色)。 |
+| `--color-accent-hover` | `#6f4527` | `--color-accent` のhover/active状態。ナビゲーションのアクティブリンク色、および本文中のテキストリンク色(`a`)にも使用。 |
 | `--color-highlight` | `#fff6e0` | タイマー実行中ステップのハイライト背景(`.step-row.current`)。 |
 | `--color-rating-active` | `#e0a326` | 星評価の選択色(`.rating-stars .active`)。 |
 
@@ -43,7 +43,8 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 |---|---|---|
 | `--color-text` / `--color-bg`, `--color-surface` | 14.28:1 / 15.26:1 | AA(通常)クリア |
 | `--color-text-muted` / `--color-bg`, `--color-surface` | 4.59:1 / 4.90:1 | AA(通常)クリア |
-| `--color-accent` / `--color-bg`, `--color-surface`(リンク色) | 5.47:1 / 5.84:1 | AA(通常)クリア |
+| `--color-accent` / `--color-bg`, `--color-surface`(`.btn-secondary` 文字色) | 5.47:1 / 5.84:1 | AA(通常)クリア |
+| `--color-accent-hover` / `--color-bg`, `--color-surface`(リンク色) | 7.69:1 / 8.22:1 | AA(通常)クリア。AAA(7:1)も上回る。`--color-text-muted`(4.59:1/4.90:1)との差を広げ、判別しやすさを確保する目的で採用(Issue #80)。 |
 | 白文字 / `--color-accent`, `--color-accent-hover`(`.btn`) | 5.84:1 / 8.21:1 | AA(通常)クリア |
 | `--color-danger` / `--color-surface`, `--color-bg` | 5.77:1 / 5.40:1 | AA(通常)クリア |
 | 白文字 / `--color-danger`(`.btn-danger:hover`) | 5.77:1 | AA(通常)クリア |
@@ -115,6 +116,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | hover(プライマリボタン) | `.btn:hover` で `--color-accent` → `--color-accent-hover` | |
 | hover(セカンダリボタン) | `.btn-secondary:hover` で背景を `--color-bg` に | |
 | hover(破壊的ボタン) | `.btn-danger:hover` で背景・文字色を反転(transparent→`--color-danger`塗り) | |
+| hover(テキストリンク) | `a:hover` で `text-decoration-thickness` を太くする | 色は変更せず、下線の太さという色以外の手がかりでフィードバックする(Issue #80)。 |
 | disabled | ネイティブの `:disabled`(`<button :disabled="saving">` 等)。専用の見た目定義(`opacity`調整など)は**存在しない** — ブラウザ既定の見た目に依存している。新規追加時は既存ボタンとの整合を優先し、独自の disabled 見た目を増やさない。 | 8節「今後の改善候補」参照 |
 | エラー | `.form-error` クラスでメッセージ文言を表示。個別入力欄自体の赤枠強調は行っていない。 | |
 | 進行中(タイマー) | `.step-row.current`(次に注湯すべきステップ) | 背景ハイライトのみ、テキストや枠線の変化はなし |
@@ -160,6 +162,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
    - 色だけで状態を伝える新規UIは避け、テキスト/アイコン/形状のいずれかを併用する。
    - キーボードフォーカス時のインジケータは `a`/`button`/`input`/`select`/`textarea` への共通 `:focus-visible` スタイル(5節)で担保済み。これら以外のタグで独自のインタラクティブ要素を作る場合のみ、同様の `outline` スタイルを追加する。
 8. **アニメーション/transition**(初出: `.app-nav` の開閉、5節参照): `transition` を新規に追加する場合、`@media (prefers-reduced-motion: reduce)` で対象セレクタに `transition: none` を適用する専用ブロックを必ず併記する。既存の `600px` ブレークポイントと組み合わせる場合は `@media (max-width: 600px) and (prefers-reduced-motion: reduce)` のように条件を連結する。
+9. **複数項目の横並び表示**(Issue #81): ラベル(項目名)+値のペアを複数横に並べる場合、`/`(全角・半角いずれも)で区切ったプレーンテキストとして連結しない。項目名と値が同じ見た目で並ぶと一目で区別できないため、Grid/Flexで意図を持って配置し、項目名(`--color-text-muted`・小さめのフォントサイズなど、`.form-row label` に準じた見た目)と値(通常の文字色・サイズ)を視覚的に区別する。この構造が複数箇所(目安3箇所以上)で繰り返される場合は、インラインでGrid/Flexを組み立てるのではなく9節の共通Vueコンポーネント化を検討する。ラベルを持たない同種の値どうしの単純な並列(例: タグの列挙)はこの限りではないが、可能な範囲でラベル付きの表現に寄せることが望ましい。
 
 **逸脱が許される条件**: 既存のパターンでは表現できない新しい概念(例: これまでにない種類の状態やレイアウト)を追加する場合に限り、新しいクラス・カスタムプロパティの追加を認める。その場合も、追加した要素は必ずこのドキュメントの該当節に追記し、他の実装からも再利用できる形(汎用クラス名・命名規則の一貫性)にすること。単に「今回だけ楽だから」という理由でのインラインstyleや使い捨てクラスの追加は行わない。
 
@@ -175,7 +178,11 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 ### 現時点で判明している切り出し候補(未実装)
 
-棚卸しの結果判明した構造的重複は、現時点ですべて `frontend/src/components/` への切り出しが完了している。新しい重複候補が見つかったら、ここに追記してから対応すること。
+| 候補 | 役割 | props / slots(想定) | 対象 |
+|---|---|---|---|
+| `SpecList`(仮称) | ラベル(項目名)+値のペアを複数横並びで表示する共通コンポーネント。`dl`/`dt`/`dd` 構造 + Grid/Flexで項目名(`--color-text-muted`)と値を視覚的に区別する。8節9項の「`/`区切り禁止」ルールの代替パターン(Issue #81)。 | props: `items: { label: string; value: string }[]` 程度を想定。詳細な設計・実装は実装時のPRで確定する。 | `RecipeListView.vue`(豆量/湯量/湯温/挽き目)、`RecipeDetailView.vue`(同+総時間)、`BeanDetailView.vue`(豆量/湯量/湯温、および産地/焙煎者/焙煎度/焙煎日)、`BeanListView.vue`(産地/焙煎者/焙煎度/焙煎日) |
+
+実装(コンポーネント作成・各ビューの書き換え)は別PRで行う。新しい重複候補が見つかったら、ここに追記してから対応すること。
 
 ### コンポーネントカタログ(実装済みのもののみ記載)
 
