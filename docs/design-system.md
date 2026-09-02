@@ -172,14 +172,13 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 ### 現時点で判明している切り出し候補(未実装)
 
-棚卸しの結果、以下の構造が既に生マークアップとして重複している。`frontend/src/components/` への切り出しが済んだものは下のカタログ表に移し、この一覧からは外すこと。
-
-1. **一覧のロード/空状態/`.card-list`シェル**: 「読み込み中...」の文言 → 0件時の空状態メッセージ(`.empty-state`) → `<div class="card-list">` という3段構成。`RecipeListView.vue`/`BeanListView.vue`/`BrewLogListView.vue`/`RecipeDetailView.vue`/`BeanDetailView.vue` の5ファイルで重複(各エンティティのカード本体はエンティティ固有のため、シェル部分のみが切り出し対象)。実装状況はIssue [#74](https://github.com/masafumi-kiyokawa/beeeans/issues/74) を参照。
+棚卸しの結果判明した構造的重複は、現時点ですべて `frontend/src/components/` への切り出しが完了している。新しい重複候補が見つかったら、ここに追記してから対応すること。
 
 ### コンポーネントカタログ(実装済みのもののみ記載)
 
 | コンポーネント | 役割 | props / slots | 使用箇所 |
 |---|---|---|---|
 | `SectionHeader` | 見出し+右寄せアクション行(`.section-title`)の共通化。見出しをプレーンな文字列で渡す場合は`title` prop、`RouterLink`/`strong`などの見出し代替が必要な場合はデフォルトスロットを使う。アクションが不要なら`actions`スロットを省略する。 | props: `title?: string`。slots: デフォルト(`title`未指定時の見出し領域)、`actions`(右寄せの任意コンテンツ、省略可)。 | `RecipeListView.vue`(2)・`RecipeDetailView.vue`(3)・`BeanListView.vue`(2)・`BeanDetailView.vue`(3)・`BrewLogListView.vue`(1)・`BrewLogCard.vue`(1) |
+| `AsyncListShell` | 「ロード中→空状態→一覧」の3値表示切り替えシェルの共通化。`loading`を省略すると2段(空状態/一覧)のみの表示になり、ページ側で既にロード済みのネストした一覧(詳細画面内の関連一覧)で使う。 | props: `loading?: boolean`、`isEmpty: boolean`。slots: `empty`(空状態メッセージ、コンポーネント側で`.empty-state`にラップ)、デフォルト(0件でない場合の一覧本体、コンポーネント側で`.card-list`にラップ)。 | `RecipeListView.vue`・`BeanListView.vue`・`BrewLogListView.vue`(以上3ファイルは`loading`あり)、`RecipeDetailView.vue`・`BeanDetailView.vue`(以上2ファイルは`loading`なし) |
 
 新しい共通コンポーネントを `frontend/src/components/` に追加したら、この表に行を追加すること。ドキュメントとコードが乖離した状態でPRを出さない(既存の運用方針と同じ)。

@@ -6,6 +6,7 @@ import type { Bean, BrewLog, RecipeDetail } from "../types";
 import PourStepEditor from "../components/PourStepEditor.vue";
 import BrewLogCard from "../components/BrewLogCard.vue";
 import SectionHeader from "../components/SectionHeader.vue";
+import AsyncListShell from "../components/AsyncListShell.vue";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -73,9 +74,9 @@ async function onDelete() {
     </div>
 
     <SectionHeader title="抽出ログ" />
-    <p v-if="logs.length === 0" class="empty-state">まだログがありません。</p>
-    <div v-else class="card-list">
+    <AsyncListShell :is-empty="logs.length === 0">
+      <template #empty>まだログがありません。</template>
       <BrewLogCard v-for="log in logs" :key="log.id" :log="log" @deleted="load" />
-    </div>
+    </AsyncListShell>
   </div>
 </template>
