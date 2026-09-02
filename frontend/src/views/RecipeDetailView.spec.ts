@@ -13,6 +13,7 @@ vi.mock("../api/client", () => clientMocks);
 import RecipeDetailView from "./RecipeDetailView.vue";
 import BrewLogCard from "../components/BrewLogCard.vue";
 import PourStepEditor from "../components/PourStepEditor.vue";
+import SectionHeader from "../components/SectionHeader.vue";
 
 const recipe = {
   id: "r1",
@@ -57,7 +58,7 @@ async function mountView(id = "r1") {
   await router.isReady();
   const wrapper = mount(RecipeDetailView, {
     props: { id },
-    global: { plugins: [router] },
+    global: { plugins: [router], stubs: { SectionHeader } },
     shallow: true,
   });
   await flushPromises();

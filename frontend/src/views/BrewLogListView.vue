@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { listBrewLogs, listRecipes } from "../api/client";
 import type { BrewLogWithRecipeName, Recipe } from "../types";
 import BrewLogCard from "../components/BrewLogCard.vue";
+import SectionHeader from "../components/SectionHeader.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -33,10 +34,11 @@ watch(selectedRecipeId, (value) => {
 
 <template>
   <div>
-    <div class="section-title">
-      <h2>抽出ログ</h2>
-      <RouterLink class="btn" to="/logs/new">ログを記録</RouterLink>
-    </div>
+    <SectionHeader title="抽出ログ">
+      <template #actions>
+        <RouterLink class="btn" to="/logs/new">ログを記録</RouterLink>
+      </template>
+    </SectionHeader>
 
     <div class="form-row form-row-narrow">
       <label for="recipe-filter">レシピで絞り込み</label>
