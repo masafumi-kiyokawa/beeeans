@@ -40,7 +40,7 @@ async function onSubmit() {
         <label for="password">パスワード</label>
         <input id="password" v-model="form.password" type="password" required />
       </div>
-      <div class="btn-row">
+      <div class="btn-row btn-row-center">
         <button class="btn" type="submit" :disabled="saving">
           {{ saving ? "ログイン中..." : "ログイン" }}
         </button>

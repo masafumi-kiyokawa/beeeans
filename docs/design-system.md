@@ -91,7 +91,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `.btn` | プライマリボタン(塗りつぶし、`--color-accent`)。`<button>` にも `<a>` にも使う。 | 全フォーム・一覧画面 |
 | `.btn-secondary` | セカンダリボタン(枠線のみ、背景transparent)。キャンセル・戻る・並び替え操作など非破壊的だが非プライマリな操作。 | `PourStepEditor.vue` の並び替えボタン、各画面の「戻る」リンク |
 | `.btn-danger` | 破壊的操作(削除)。既定はtransparent、hoverで`--color-danger`背景に反転。 | 削除ボタン全般 |
-| `.btn-row` | ボタンを横並びにするコンテナ(`flex`, `gap: 0.5rem`, `flex-wrap: wrap`)。 | フォームのアクション行、タイマー画面の操作行 |
+| `.btn-row` | ボタンを横並びにするコンテナ(`flex`, `gap: 0.5rem`, `flex-wrap: wrap`, `justify-content: flex-end`)。既定でコンテナ右端に寄せる(下記「ボタン配置」参照)。 | フォームのアクション行、タイマー画面の操作行 |
 | `.form-row` | フォーム1項目分(label + input を縦積み)。 | 全フォーム画面 |
 | `.form-grid` | `.form-row` を `minmax(200px, 1fr)` のレスポンシブグリッドで並べる(レシピ作成フォームの複数フィールドなど)。 | `RecipeFormView.vue` |
 | `.table` | 一覧テーブルの基本スタイル(border-collapse、セルpadding、下線区切り)。 | 一覧系ビュー |
@@ -104,7 +104,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `.muted` | 補助的な説明文・メタ情報。 | 各所 |
 | `.step-sub` | `.step-row` 内の補足テキスト(1段小さいmutedテキスト)。 | `PourStepEditor.vue`, `BrewTimerView.vue` |
 | `.timer-display` | タイマーの大きな数字表示。中央寄せ・等幅数字。 | `BrewTimerView.vue` |
-| `.btn-row-center` | `.btn-row` と併用する修飾クラス。ボタンを中央寄せし、下マージン `1.5rem` を付与する。 | `BrewTimerView.vue` |
+| `.btn-row-center` | `.btn-row` と併用する修飾クラス。ボタンを中央寄せし、下マージン `1.5rem` を付与する。 | `BrewTimerView.vue`, `LoginView.vue`, `RegisterView.vue` |
 | `.stack-top` | 直前のブロックと区切るための `margin-top: var(--spacing)`。`.btn-row`/`.form-row` などに併用する。 | `BrewTimerView.vue`, `PourStepEditor.vue` |
 | `.form-row-narrow` | `.form-row` と併用する修飾クラス。`max-width: 320px` で横幅を絞る(絞り込み用セレクトなど)。 | `BrewLogListView.vue` |
 | `.app-shell` / `.app-header` / `.app-title` / `.app-nav` | アプリ全体のレイアウト骨格(`App.vue` 専用)。ページコンポーネント側では使わない。 | `App.vue` |
@@ -112,6 +112,10 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `.spec-cell` | `.grid-12` の直下で使う修飾クラス。`grid-column: span 3` で1/4幅を占める(600px以下では `grid-column: 1 / -1` で全幅に戻る)。`min-width: 0; overflow-wrap: break-word;` を併せて指定し、スペースを含まない長い値でトラックが崩れるのを防ぐ。単独では使わず `SpecGrid` コンポーネント(9節)経由で使う。 | `SpecGrid.vue` |
 | `.spec-grid` | `.grid-12` と組み合わせる修飾クラス。`gap: 0.75rem 1rem`(2節の余白スケールを再利用)で縦方向のギャップを付け、`.grid-12` の既定(縦ギャップ0)を上書きする。`.app-shell` など他の `.grid-12` 利用箇所には影響しない。`dl` の既定マージンも `margin: 0` で打ち消す。 | `SpecGrid.vue` |
 | `.app-nav-toggle` | ハンバーガーメニューの開閉ボタン。**単独では使わず、必ず `.btn`/`.btn-secondary` と組み合わせて使う**(`class="app-nav-toggle btn btn-secondary"`)。`.app-nav-toggle` 自体はモバイル幅での表示切り替えとアイコン用のpadding/font-sizeのみを担当し、色(`color`/`background`/`border`)は `.btn`/`.btn-secondary` からの継承に委ねる。 | `App.vue` |
+
+### ボタン配置
+
+ボタン(`.btn`/`.btn-secondary`/`.btn-danger`)は、コンテナ内で基本的に右寄せにする。`.btn-row` は既定で `justify-content: flex-end` なので、フォームのSave/Cancelや一覧の操作ボタンなど新しくボタン列を追加する場合は `.btn-row` をそのまま使えば右寄せになる。`.section-title` も `justify-content: space-between`(見出しは左・アクションボタンは右)で同じ配置方針を既に踏襲している。中央寄せが必要な場合のみ、意図的な例外として `.btn-row-center` を使う(タイマー画面の操作行のほか、`LoginView.vue`/`RegisterView.vue` のログイン・新規登録ボタンも「フォーム単体が画面の主役でヘッダー直下に浮いた `.card` として置かれる」構図のため中央寄せを採用)。単一ボタンを左寄せにする特別な理由がない限り、新しいボタン配置は右寄せを既定とすること。
 
 ## 5. コンポーネントの状態表現
 
@@ -158,7 +162,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 1. **色**: 1節の8変数のいずれかで表現できないか確認する。新しい16進数カラーを直接書く前に、既存のいずれかの意味(bg/surface/border/text/text-muted/accent/accent-hover/danger)に当てはまらないか検討する。当てはまらない場合のみ新しいカスタムプロパティを `:root` に追加し、このドキュメントの1節にも追記する。**新しいインタラクティブ要素のクラスを書く場合、`color`/`background`/`border` のうち見た目に関わる全プロパティを明示するか、`.btn`/`.btn-secondary`/`.btn-danger` と組み合わせて不足分を継承させる。一部のプロパティだけパレット変数を使い、残り(特に `color`)をブラウザ既定色に委ねる「部分的な one-off クラス」を作らない**(`.app-nav-toggle` が `color` 未定義のままリリースされ、パレット外の色に見えた実例——7節参照)。
 2. **余白**: 2節の値(`0.25rem`〜`3rem`の列挙)から選ぶ。インラインの `style="margin..."` は使わない——既存の逸脱(2節参照)をこれ以上増やさない。繰り返し必要になる余白パターンなら、新しいユーティリティクラスとして `style.css` に切り出す。
 3. **タイポグラフィ**: 3節のサイズ/太さの使い分け(見出し/本文/補助/ラベル)から選ぶ。`font-family` は上書きしない。
-4. **コンポーネント**: 4節の既存ユーティリティクラス(`.card` `.btn`系 `.form-row` `.form-grid` `.table` `.step-row` `.rating-stars` `.section-title` `.empty-state` `.form-error` `.muted` 等)で表現できないか確認する。特に `.btn`/`.btn-secondary`/`.btn-danger` の使い分け(プライマリ/セカンダリ/破壊的)は必ず守る。**非プライマリな操作用のボタン/トグル(ハンバーガーメニューの開閉など)を新規に作る場合、独自クラスを一から書く前に必ず `.btn-secondary` と組み合わせられないか検討する**(見た目に関わるプロパティを個別クラスだけで完結させようとすると、一部のプロパティの書き忘れに気づきにくい)。**スタイル(色/余白/フォント)だけでなく、マークアップの構造そのもの(要素の入れ子・スロットの役割)が複数画面で繰り返される場合は、ユーティリティクラスの追加だけでなく9節の共通Vueコンポーネント化も検討する。**
+4. **コンポーネント**: 4節の既存ユーティリティクラス(`.card` `.btn`系 `.form-row` `.form-grid` `.table` `.step-row` `.rating-stars` `.section-title` `.empty-state` `.form-error` `.muted` 等)で表現できないか確認する。特に `.btn`/`.btn-secondary`/`.btn-danger` の使い分け(プライマリ/セカンダリ/破壊的)は必ず守る。ボタンの配置は4節「ボタン配置」の通り基本的に右寄せ(`.btn-row` の既定 `justify-content: flex-end` をそのまま使う)とし、中央寄せが必要な場合のみ `.btn-row-center` を使う。**非プライマリな操作用のボタン/トグル(ハンバーガーメニューの開閉など)を新規に作る場合、独自クラスを一から書く前に必ず `.btn-secondary` と組み合わせられないか検討する**(見た目に関わるプロパティを個別クラスだけで完結させようとすると、一部のプロパティの書き忘れに気づきにくい)。**スタイル(色/余白/フォント)だけでなく、マークアップの構造そのもの(要素の入れ子・スロットの役割)が複数画面で繰り返される場合は、ユーティリティクラスの追加だけでなく9節の共通Vueコンポーネント化も検討する。**
 5. **状態表現**: 5節のパターン(hover/disabled/エラー/current/done/active/focus)に倣う。色だけに依存する新しい状態を追加する場合、7節を踏まえてテキストやアイコンなど色以外の手がかりも検討する。`a`/`button`/`input`/`select`/`textarea` は `:focus-visible` の共通スタイルが既に適用されるため、新しいインタラクティブ要素を追加する場合は個別対応不要(タグ名がこれらと異なる独自要素を作る場合のみ、同じ `outline` スタイルの追加を検討する)。
 6. **レスポンシブ**: 複数カラムのレイアウトを新規追加する場合、既存の`600px`ブレークポイントを使って1カラム化する。新しいブレークポイントは、既存の600pxで表現できないことを確認してからにする。
 7. **アクセシビリティ最低基準**(7節の課題を踏まえた、新規実装時の最低ライン):
