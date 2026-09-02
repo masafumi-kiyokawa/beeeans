@@ -7,6 +7,8 @@ import PourStepEditor from "../components/PourStepEditor.vue";
 import BrewLogCard from "../components/BrewLogCard.vue";
 import SectionHeader from "../components/SectionHeader.vue";
 import AsyncListShell from "../components/AsyncListShell.vue";
+import SpecGrid from "../components/SpecGrid.vue";
+import { recipeSpecItems } from "../utils/specItems";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -60,11 +62,7 @@ async function onDelete() {
       <p v-if="bean" class="muted">
         使用した豆: <RouterLink :to="`/beans/${bean.id}`">{{ bean.name }}</RouterLink>
       </p>
-      <p>
-        豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃
-        <template v-if="recipe.grind_size"> / 挽き目 {{ recipe.grind_size }}</template>
-        <template v-if="recipe.total_time_sec"> / 総時間 {{ recipe.total_time_sec }}秒</template>
-      </p>
+      <SpecGrid :items="recipeSpecItems(recipe, { includeTotalTime: true })" />
       <p v-if="recipe.notes">{{ recipe.notes }}</p>
     </div>
 

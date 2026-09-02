@@ -61,6 +61,10 @@ textarea:focus-visible {
   grid-column: 1 / -1;
 }
 
+.grid-12 > .spec-cell {
+  grid-column: span 3;
+}
+
 .app-header {
   display: flex;
   align-items: center;
@@ -350,6 +354,10 @@ button.app-nav-toggle {
 
   .step-row-header {
     display: none;
+  }
+
+  .grid-12 > .spec-cell {
+    grid-column: 1 / -1;
   }
 }
 

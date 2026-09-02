@@ -4,8 +4,10 @@ import { useRouter } from "vue-router";
 import { deleteBean, getBean, listRecipes } from "../api/client";
 import type { Bean, Recipe } from "../types";
 import { isSafePurchaseUrl } from "../utils/url";
+import { beanSpecItems, recipeSpecItems } from "../utils/specItems";
 import SectionHeader from "../components/SectionHeader.vue";
 import AsyncListShell from "../components/AsyncListShell.vue";
+import SpecGrid from "../components/SpecGrid.vue";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -50,13 +52,10 @@ async function onDelete() {
     </SectionHeader>
 
     <div class="card">
-      <p class="muted" v-if="bean.origin || bean.roaster">
-        {{ [bean.origin, bean.roaster].filter(Boolean).join(" / ") }}
-      </p>
-      <p class="muted" v-if="bean.roast_level || bean.roast_date">
-        <template v-if="bean.roast_level">{{ bean.roast_level }}</template>
-        <template v-if="bean.roast_date"> / 焙煎日 {{ bean.roast_date.slice(0, 10) }}</template>
-      </p>
+      <SpecGrid
+        v-if="bean.origin || bean.roaster || bean.roast_level || bean.roast_date"
+        :items="beanSpecItems(bean)"
+      />
       <p v-if="bean.purchase_url">
         <a v-if="safeUrl" :href="safeUrl" target="_blank" rel="noopener noreferrer"
           >購入ページを開く</a
@@ -79,9 +78,7 @@ async function onDelete() {
             ><strong>{{ recipe.name }}</strong></RouterLink
           >
         </SectionHeader>
-        <p class="muted">
-          豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃
-        </p>
+        <SpecGrid :items="recipeSpecItems(recipe)" />
         <div class="btn-row">
           <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}`">詳細</RouterLink>
           <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/edit`">編集</RouterLink>

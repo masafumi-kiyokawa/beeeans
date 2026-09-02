@@ -4,6 +4,8 @@ import { deleteRecipe, listBeans, listRecipes } from "../api/client";
 import type { Recipe } from "../types";
 import SectionHeader from "../components/SectionHeader.vue";
 import AsyncListShell from "../components/AsyncListShell.vue";
+import SpecGrid from "../components/SpecGrid.vue";
+import { recipeSpecItems } from "../utils/specItems";
 
 const recipes = ref<Recipe[]>([]);
 const beanNameById = ref(new Map<string, string>());
@@ -49,10 +51,7 @@ onMounted(load);
         <p class="muted" v-if="recipe.bean_id && beanNameById.get(recipe.bean_id)">
           {{ beanNameById.get(recipe.bean_id) }}
         </p>
-        <p class="muted">
-          豆 {{ recipe.dose_g }}g / 湯 {{ recipe.water_ml }}ml / {{ recipe.water_temp_c }}℃
-          <template v-if="recipe.grind_size"> / 挽き目 {{ recipe.grind_size }}</template>
-        </p>
+        <SpecGrid :items="recipeSpecItems(recipe)" />
         <div class="btn-row">
           <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}`">詳細</RouterLink>
           <RouterLink class="btn btn-secondary" :to="`/recipes/${recipe.id}/brew`"
