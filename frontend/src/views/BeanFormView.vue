@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { createBean, getBean, updateBean } from "../api/client";
+import SectionHeader from "../components/SectionHeader.vue";
 import { isSafePurchaseUrl } from "../utils/url";
 
 const route = useRoute();
@@ -72,7 +73,7 @@ async function onSubmit() {
 
 <template>
   <div>
-    <h2>{{ isEdit ? "豆を編集" : "新規の豆" }}</h2>
+    <SectionHeader :title="isEdit ? '豆を編集' : '新規の豆'" />
     <form class="card" @submit.prevent="onSubmit">
       <div class="form-row">
         <label for="name">豆の名前</label>

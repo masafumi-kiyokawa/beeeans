@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { createRecipe, getRecipe, listBeans, updateRecipe } from "../api/client";
+import SectionHeader from "../components/SectionHeader.vue";
 import { loadLastRecipeInput, saveLastRecipeInput } from "../storage/lastRecipeInput";
 import type { Bean } from "../types";
 
@@ -99,7 +100,7 @@ async function onSubmit() {
 
 <template>
   <div>
-    <h2>{{ isEdit ? "レシピを編集" : "新規レシピ" }}</h2>
+    <SectionHeader :title="isEdit ? 'レシピを編集' : '新規レシピ'" />
     <form class="card" @submit.prevent="onSubmit">
       <div class="form-row">
         <label for="name">レシピ名</label>

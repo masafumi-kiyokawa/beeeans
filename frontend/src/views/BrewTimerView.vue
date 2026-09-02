@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import { getRecipe } from "../api/client";
+import SectionHeader from "../components/SectionHeader.vue";
 import type { RecipeDetail } from "../types";
 
 const props = defineProps<{ id: string }>();
@@ -85,7 +86,7 @@ const currentStepIndex = computed(() => {
 <template>
   <div v-if="loading" class="muted">読み込み中...</div>
   <div v-else-if="recipe">
-    <h2>{{ recipe.name }} — タイマー</h2>
+    <SectionHeader :title="`${recipe.name} — タイマー`" />
 
     <div class="timer-display">{{ formatTime(elapsed) }}</div>
 
