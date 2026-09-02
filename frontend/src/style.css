@@ -209,6 +209,31 @@ button.app-nav-toggle {
   font-size: 0.9rem;
 }
 
+.spec-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.spec-item {
+  display: flex;
+  gap: 0.25rem;
+  align-items: baseline;
+}
+
+.spec-item dt {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.spec-item dd {
+  margin: 0;
+  color: var(--color-text);
+}
+
 .step-sub {
   display: block;
   color: var(--color-text-muted);

@@ -3,8 +3,10 @@ import { onMounted, ref } from "vue";
 import { deleteBean, listBeans } from "../api/client";
 import type { Bean } from "../types";
 import { isSafePurchaseUrl } from "../utils/url";
+import { beanSpecItems } from "../utils/specItems";
 import SectionHeader from "../components/SectionHeader.vue";
 import AsyncListShell from "../components/AsyncListShell.vue";
+import SpecList from "../components/SpecList.vue";
 
 const beans = ref<Bean[]>([]);
 const loading = ref(true);
@@ -45,13 +47,10 @@ onMounted(load);
         <SectionHeader>
           <strong>{{ bean.name }}</strong>
         </SectionHeader>
-        <p class="muted" v-if="bean.origin || bean.roaster">
-          {{ [bean.origin, bean.roaster].filter(Boolean).join(" / ") }}
-        </p>
-        <p class="muted" v-if="bean.roast_level || bean.roast_date">
-          <template v-if="bean.roast_level">{{ bean.roast_level }}</template>
-          <template v-if="bean.roast_date"> / 焙煎日 {{ bean.roast_date.slice(0, 10) }}</template>
-        </p>
+        <SpecList
+          v-if="bean.origin || bean.roaster || bean.roast_level || bean.roast_date"
+          :items="beanSpecItems(bean)"
+        />
         <p v-if="bean.purchase_url">
           <a v-if="safeUrl(bean)" :href="safeUrl(bean)!" target="_blank" rel="noopener noreferrer"
             >購入ページを開く</a
