@@ -101,6 +101,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 | `.empty-state` | 一覧が0件のときのプレースホルダーテキスト。 | 各一覧ビュー |
 | `.form-error` | フォーム送信エラーメッセージ(`--color-danger`)。 | 全フォーム画面 |
 | `.muted` | 補助的な説明文・メタ情報。 | 各所 |
+| `.spec-list` / `.spec-item` | ラベル(項目名)+値のペアを複数横並びで表示する(`.spec-list` が `dl`、`.spec-item` が各ペアの `div`)。`.spec-item dt` が項目名(`--color-text-muted`、`.form-row label` と同じ見た目)、`.spec-item dd` が値(`--color-text`)。`/`区切りのプレーンテキスト連結の代替(8節9項)。単独では使わず、`SpecList` コンポーネント(9節)経由で使う。 | `SpecList.vue` |
 | `.step-sub` | `.step-row` 内の補足テキスト(1段小さいmutedテキスト)。 | `PourStepEditor.vue`, `BrewTimerView.vue` |
 | `.timer-display` | タイマーの大きな数字表示。中央寄せ・等幅数字。 | `BrewTimerView.vue` |
 | `.btn-row-center` | `.btn-row` と併用する修飾クラス。ボタンを中央寄せし、下マージン `1.5rem` を付与する。 | `BrewTimerView.vue` |
@@ -178,11 +179,7 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 
 ### 現時点で判明している切り出し候補(未実装)
 
-| 候補 | 役割 | props / slots(想定) | 対象 |
-|---|---|---|---|
-| `SpecList`(仮称) | ラベル(項目名)+値のペアを複数横並びで表示する共通コンポーネント。`dl`/`dt`/`dd` 構造 + Grid/Flexで項目名(`--color-text-muted`)と値を視覚的に区別する。8節9項の「`/`区切り禁止」ルールの代替パターン(Issue #81)。 | props: `items: { label: string; value: string }[]` 程度を想定。詳細な設計・実装は実装時のPRで確定する。 | `RecipeListView.vue`(豆量/湯量/湯温/挽き目)、`RecipeDetailView.vue`(同+総時間)、`BeanDetailView.vue`(豆量/湯量/湯温、および産地/焙煎者/焙煎度/焙煎日)、`BeanListView.vue`(産地/焙煎者/焙煎度/焙煎日) |
-
-実装(コンポーネント作成・各ビューの書き換え)は別PRで行う。新しい重複候補が見つかったら、ここに追記してから対応すること。
+棚卸しの結果判明した構造的重複は、現時点ですべて `frontend/src/components/` への切り出しが完了している。新しい重複候補が見つかったら、ここに追記してから対応すること。
 
 ### コンポーネントカタログ(実装済みのもののみ記載)
 
@@ -190,5 +187,6 @@ beeeans(ハンドドリップコーヒーのレシピ管理アプリ)フロン�
 |---|---|---|---|
 | `SectionHeader` | 見出し+右寄せアクション行(`.section-title`)の共通化。見出しをプレーンな文字列で渡す場合は`title` prop、`RouterLink`/`strong`などの見出し代替が必要な場合はデフォルトスロットを使う。アクションが不要なら`actions`スロットを省略する。 | props: `title?: string`。slots: デフォルト(`title`未指定時の見出し領域)、`actions`(右寄せの任意コンテンツ、省略可)。 | `RecipeListView.vue`(2)・`RecipeDetailView.vue`(3)・`BeanListView.vue`(2)・`BeanDetailView.vue`(3)・`BrewLogListView.vue`(1)・`BrewLogCard.vue`(1) |
 | `AsyncListShell` | 「ロード中→空状態→一覧」の3値表示切り替えシェルの共通化。`loading`を省略すると2段(空状態/一覧)のみの表示になり、ページ側で既にロード済みのネストした一覧(詳細画面内の関連一覧)で使う。 | props: `loading?: boolean`、`isEmpty: boolean`。slots: `empty`(空状態メッセージ、コンポーネント側で`.empty-state`にラップ)、デフォルト(0件でない場合の一覧本体、コンポーネント側で`.card-list`にラップ)。 | `RecipeListView.vue`・`BeanListView.vue`・`BrewLogListView.vue`(以上3ファイルは`loading`あり)、`RecipeDetailView.vue`・`BeanDetailView.vue`(以上2ファイルは`loading`なし) |
+| `SpecList` | ラベル(項目名)+値のペアを複数横並びで表示する共通コンポーネント。`dl`/`dt`/`dd` 構造(`.spec-list`/`.spec-item`、4節参照)で項目名(`--color-text-muted`、`.form-row label` に準じた見た目)と値(`--color-text`)を視覚的に区別する。8節9項の「`/`区切り禁止」ルールの実装(Issue #81)。 | props: `items: { label: string; value: string }[]`。 | `RecipeListView.vue`(豆の量/湯量/湯温/挽き目)、`RecipeDetailView.vue`(同+総抽出時間)、`BeanDetailView.vue`(豆の量/湯量/湯温、および産地/焙煎者/焙煎度/焙煎日)、`BeanListView.vue`(産地/焙煎者/焙煎度/焙煎日) |
 
 新しい共通コンポーネントを `frontend/src/components/` に追加したら、この表に行を追加すること。ドキュメントとコードが乖離した状態でPRを出さない(既存の運用方針と同じ)。
