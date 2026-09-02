@@ -111,11 +111,11 @@ async function onSubmit() {
           <option value="">未選択</option>
           <option v-for="b in beans" :key="b.id" :value="b.id">{{ b.name }}</option>
         </select>
-        <p class="muted">
+        <p class="muted btn-row">
           <RouterLink to="/beans/new">+ 新しい豆を登録</RouterLink>
-          <template v-if="form.bean_id">
-            ／ <RouterLink :to="`/beans/${form.bean_id}/edit`">選択した豆を編集</RouterLink>
-          </template>
+          <RouterLink v-if="form.bean_id" :to="`/beans/${form.bean_id}/edit`"
+            >選択した豆を編集</RouterLink
+          >
         </p>
       </div>
       <div class="form-grid">
