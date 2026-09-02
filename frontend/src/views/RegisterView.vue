@@ -40,7 +40,7 @@ async function onSubmit() {
         <label for="password">パスワード（8文字以上）</label>
         <input id="password" v-model="form.password" type="password" minlength="8" required />
       </div>
-      <div class="btn-row">
+      <div class="btn-row btn-row-center">
         <button class="btn" type="submit" :disabled="saving">
           {{ saving ? "登録中..." : "登録" }}
         </button>
